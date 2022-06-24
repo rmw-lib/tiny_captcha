@@ -28,7 +28,7 @@ pub type __ssize_t = libc::c_long;
 pub type size_t = libc::c_ulong;
 pub const gifsize: libc::c_int = 17646 as libc::c_int;
 #[no_mangle]
-pub unsafe extern "C" fn makegif(mut im: *mut u8, mut gif: *mut u8) {
+pub unsafe fn makegif(mut im: *mut u8, mut gif: *mut u8) {
     // tag ; widthxheight ; GCT:0:0:7 ; bgcolor + aspect // GCT
     // Image Separator // left x top // widthxheight // Flags
     // LZW code size
@@ -40,11 +40,7 @@ pub unsafe extern "C" fn makegif(mut im: *mut u8, mut gif: *mut u8) {
     let mut x: libc::c_int = 0; // bbb10000
     let mut y: libc::c_int = 0; // b10000xb
     let mut i: *mut u8 = im; // 0000xbbb
-    let mut p: *mut u8 = gif
-        .offset(13 as libc::c_int as isize)
-        .offset(48 as libc::c_int as isize)
-        .offset(10 as libc::c_int as isize)
-        .offset(1 as libc::c_int as isize); // 00xbbbb1
+    let mut p: *mut u8 = gif.offset(13).offset(48).offset(10).offset(1); // 00xbbbb1
     y = 0 as libc::c_int; // xbbbb100
     while y < 70 as libc::c_int {
         let fresh0 = p;
@@ -52,35 +48,26 @@ pub unsafe extern "C" fn makegif(mut im: *mut u8, mut gif: *mut u8) {
         *fresh0 = 250 as libc::c_int as u8;
         x = 0 as libc::c_int;
         while x < 50 as libc::c_int {
-            let mut a: u8 =
-                (*i.offset(0 as libc::c_int as isize) as libc::c_int >> 4 as libc::c_int) as u8;
-            let mut b: u8 =
-                (*i.offset(1 as libc::c_int as isize) as libc::c_int >> 4 as libc::c_int) as u8;
-            let mut c: u8 =
-                (*i.offset(2 as libc::c_int as isize) as libc::c_int >> 4 as libc::c_int) as u8;
-            let mut d: u8 =
-                (*i.offset(3 as libc::c_int as isize) as libc::c_int >> 4 as libc::c_int) as u8;
-            *p.offset(0 as libc::c_int as isize) =
-                (16 as libc::c_int | (a as libc::c_int) << 5 as libc::c_int) as u8;
-            *p.offset(1 as libc::c_int as isize) = (a as libc::c_int >> 3 as libc::c_int
+            let mut a: u8 = (*i.offset(0) as libc::c_int >> 4 as libc::c_int) as u8;
+            let mut b: u8 = (*i.offset(1) as libc::c_int >> 4 as libc::c_int) as u8;
+            let mut c: u8 = (*i.offset(2) as libc::c_int >> 4 as libc::c_int) as u8;
+            let mut d: u8 = (*i.offset(3) as libc::c_int >> 4 as libc::c_int) as u8;
+            *p.offset(0) = (16 as libc::c_int | (a as libc::c_int) << 5 as libc::c_int) as u8;
+            *p.offset(1) = (a as libc::c_int >> 3 as libc::c_int
                 | 64 as libc::c_int
-                | (b as libc::c_int) << 7 as libc::c_int)
-                as u8;
-            *p.offset(2 as libc::c_int as isize) = (b as libc::c_int >> 1 as libc::c_int) as u8;
-            *p.offset(3 as libc::c_int as isize) =
-                (1 as libc::c_int | (c as libc::c_int) << 1 as libc::c_int) as u8;
-            *p.offset(4 as libc::c_int as isize) =
-                (4 as libc::c_int | (d as libc::c_int) << 3 as libc::c_int) as u8;
-            i = i.offset(4 as libc::c_int as isize);
-            p = p.offset(5 as libc::c_int as isize);
+                | (b as libc::c_int) << 7 as libc::c_int) as u8;
+            *p.offset(2) = (b as libc::c_int >> 1 as libc::c_int) as u8;
+            *p.offset(3) = (1 as libc::c_int | (c as libc::c_int) << 1 as libc::c_int) as u8;
+            *p.offset(4) = (4 as libc::c_int | (d as libc::c_int) << 3 as libc::c_int) as u8;
+            i = i.offset(4);
+            p = p.offset(5);
             x += 1
         }
         y += 1
     }
     // Data length // End of LZW (b10001) // Terminator // GIF End
     memcpy(
-        gif.offset(gifsize as isize)
-            .offset(-(4 as libc::c_int as isize)) as *mut libc::c_void,
+        gif.offset(gifsize as isize).offset(-(4)) as *mut libc::c_void,
         b"\x01\x11\x00;\x00" as *const u8 as *const libc::c_char as *const libc::c_void,
         4 as libc::c_int as libc::c_ulong,
     );
@@ -98,7 +85,7 @@ static mut sw: [i8; 200] = [
     -93, -90, -87, -84, -81, -78, -75, -71, -68, -65, -61, -58, -54, -50, -47, -43, -39, -35, -31,
     -27, -23, -20, -16, -12, -8, -4,
 ];
-unsafe extern "C" fn letter(
+unsafe fn letter(
     mut n: libc::c_int,
     mut pos: libc::c_int,
     mut im: *mut u8,
@@ -118,7 +105,7 @@ unsafe extern "C" fn letter(
     while *p as libc::c_int != -(101 as libc::c_int) {
         if (*p as libc::c_int) < 0 as libc::c_int {
             if *p as libc::c_int == -(100 as libc::c_int) {
-                r = r.offset(200 as libc::c_int as isize);
+                r = r.offset(200);
                 i = r;
                 sk1 = s1 as libc::c_int + pos;
                 row += 1
@@ -158,9 +145,10 @@ unsafe extern "C" fn letter(
     }
     mpos + 3 as libc::c_int
 }
-#[no_mangle]
+
 pub static mut dr: [u32; 100] = [0; 100];
-unsafe extern "C" fn line(mut im: *mut u8, mut swr: *mut u8, mut s1: u8) {
+
+unsafe fn line(mut im: *mut u8, mut swr: *mut u8, mut s1: u8) {
     let mut x: libc::c_int = 0;
     let mut sk1: libc::c_int = s1 as libc::c_int;
     x = 0 as libc::c_int;
@@ -172,14 +160,14 @@ unsafe extern "C" fn line(mut im: *mut u8, mut swr: *mut u8, mut s1: u8) {
         sk1 += *swr.offset(x as isize) as libc::c_int & (0x3 as libc::c_int + 1 as libc::c_int);
         let mut i: *mut u8 =
             im.offset((200 as libc::c_int * (45 as libc::c_int + skew) + x) as isize);
-        *i.offset(0 as libc::c_int as isize) = 0 as libc::c_int as u8;
-        *i.offset(1 as libc::c_int as isize) = 0 as libc::c_int as u8;
-        *i.offset(200 as libc::c_int as isize) = 0 as libc::c_int as u8;
-        *i.offset(201 as libc::c_int as isize) = 0 as libc::c_int as u8;
+        *i.offset(0) = 0 as libc::c_int as u8;
+        *i.offset(1) = 0 as libc::c_int as u8;
+        *i.offset(200) = 0 as libc::c_int as u8;
+        *i.offset(201) = 0 as libc::c_int as u8;
         x += 1
     }
 }
-unsafe extern "C" fn dots(mut im: *mut u8) {
+unsafe fn dots(mut im: *mut u8) {
     let mut n: libc::c_int = 0;
     n = 0 as libc::c_int;
     while n < 100 as libc::c_int {
@@ -187,16 +175,16 @@ unsafe extern "C" fn dots(mut im: *mut u8) {
         let mut i: *mut u8 = im.offset(
             v.wrapping_rem((200 as libc::c_int * 67 as libc::c_int) as libc::c_uint) as isize,
         );
-        *i.offset(0 as libc::c_int as isize) = 0xff as libc::c_int as u8;
-        *i.offset(1 as libc::c_int as isize) = 0xff as libc::c_int as u8;
-        *i.offset(2 as libc::c_int as isize) = 0xff as libc::c_int as u8;
-        *i.offset(200 as libc::c_int as isize) = 0xff as libc::c_int as u8;
-        *i.offset(201 as libc::c_int as isize) = 0xff as libc::c_int as u8;
-        *i.offset(202 as libc::c_int as isize) = 0xff as libc::c_int as u8;
+        *i.offset(0) = 0xff as libc::c_int as u8;
+        *i.offset(1) = 0xff as libc::c_int as u8;
+        *i.offset(2) = 0xff as libc::c_int as u8;
+        *i.offset(200) = 0xff as libc::c_int as u8;
+        *i.offset(201) = 0xff as libc::c_int as u8;
+        *i.offset(202) = 0xff as libc::c_int as u8;
         n += 1
     }
 }
-unsafe extern "C" fn blur(mut im: *mut u8) {
+unsafe fn blur(mut im: *mut u8) {
     let mut i: *mut u8 = im;
     let mut x: libc::c_int = 0;
     let mut y: libc::c_int = 0;
@@ -205,9 +193,9 @@ unsafe extern "C" fn blur(mut im: *mut u8) {
         x = 0 as libc::c_int;
         while x < 198 as libc::c_int {
             let mut c11: libc::c_uint = *i as libc::c_uint;
-            let mut c12: libc::c_uint = *i.offset(1 as libc::c_int as isize) as libc::c_uint;
-            let mut c21: libc::c_uint = *i.offset(200 as libc::c_int as isize) as libc::c_uint;
-            let mut c22: libc::c_uint = *i.offset(201 as libc::c_int as isize) as libc::c_uint;
+            let mut c12: libc::c_uint = *i.offset(1) as libc::c_uint;
+            let mut c21: libc::c_uint = *i.offset(200) as libc::c_uint;
+            let mut c22: libc::c_uint = *i.offset(201) as libc::c_uint;
             let fresh1 = i;
             i = i.offset(1);
             *fresh1 = c11
@@ -220,7 +208,7 @@ unsafe extern "C" fn blur(mut im: *mut u8) {
         y += 1
     }
 }
-unsafe extern "C" fn filter(mut im: *mut u8) {
+unsafe fn filter(mut im: *mut u8) {
     let mut om: [u8; 14000] = [0; 14000];
     let mut i: *mut u8 = im;
     let mut o: *mut u8 = om.as_mut_ptr();
@@ -235,16 +223,16 @@ unsafe extern "C" fn filter(mut im: *mut u8) {
     while y < 70 as libc::c_int {
         x = 4 as libc::c_int;
         while x < 200 as libc::c_int - 4 as libc::c_int {
-            if *i.offset(0 as libc::c_int as isize) as libc::c_int > 0xf0 as libc::c_int
-                && (*i.offset(1 as libc::c_int as isize) as libc::c_int) < 0xf0 as libc::c_int
+            if *i.offset(0) as libc::c_int > 0xf0 as libc::c_int
+                && (*i.offset(1) as libc::c_int) < 0xf0 as libc::c_int
             {
-                *o.offset(0 as libc::c_int as isize) = 0 as libc::c_int as u8;
-                *o.offset(1 as libc::c_int as isize) = 0 as libc::c_int as u8
-            } else if (*i.offset(0 as libc::c_int as isize) as libc::c_int) < 0xf0 as libc::c_int
-                && *i.offset(1 as libc::c_int as isize) as libc::c_int > 0xf0 as libc::c_int
+                *o.offset(0) = 0 as libc::c_int as u8;
+                *o.offset(1) = 0 as libc::c_int as u8
+            } else if (*i.offset(0) as libc::c_int) < 0xf0 as libc::c_int
+                && *i.offset(1) as libc::c_int > 0xf0 as libc::c_int
             {
-                *o.offset(0 as libc::c_int as isize) = 0 as libc::c_int as u8;
-                *o.offset(1 as libc::c_int as isize) = 0 as libc::c_int as u8
+                *o.offset(0) = 0 as libc::c_int as u8;
+                *o.offset(1) = 0 as libc::c_int as u8
             }
             i = i.offset(1);
             o = o.offset(1);
@@ -276,83 +264,35 @@ pub unsafe fn captcha() -> ([u8; 6], [u8; IMG_SIZE]) {
 
     s1 = (s1 as libc::c_int & 0x7f as libc::c_int) as u8;
     s2 = (s2 as libc::c_int & 0x3f as libc::c_int) as u8;
-    let fresh2 = &mut (*l.offset(0 as libc::c_int as isize));
+    let fresh2 = &mut (*l.offset(0));
     *fresh2 = (*fresh2 as libc::c_int % 25 as libc::c_int) as u8;
-    let fresh3 = &mut (*l.offset(1 as libc::c_int as isize));
+    let fresh3 = &mut (*l.offset(1));
     *fresh3 = (*fresh3 as libc::c_int % 25 as libc::c_int) as u8;
-    let fresh4 = &mut (*l.offset(2 as libc::c_int as isize));
+    let fresh4 = &mut (*l.offset(2));
     *fresh4 = (*fresh4 as libc::c_int % 25 as libc::c_int) as u8;
-    let fresh5 = &mut (*l.offset(3 as libc::c_int as isize));
+    let fresh5 = &mut (*l.offset(3));
     *fresh5 = (*fresh5 as libc::c_int % 25 as libc::c_int) as u8;
-    let fresh6 = &mut (*l.offset(4 as libc::c_int as isize));
+    let fresh6 = &mut (*l.offset(4));
     *fresh6 = (*fresh6 as libc::c_int % 25 as libc::c_int) as u8;
-    let fresh7 = &mut (*l.offset(5 as libc::c_int as isize));
+    let fresh7 = &mut (*l.offset(5));
     *fresh7 = (*fresh7 as libc::c_int % 25 as libc::c_int) as u8;
     let mut p: libc::c_int = 30 as libc::c_int;
-    p = letter(
-        *l.offset(0 as libc::c_int as isize) as libc::c_int,
-        p,
-        im,
-        swr.as_mut_ptr(),
-        s1,
-        s2,
-    );
-    p = letter(
-        *l.offset(1 as libc::c_int as isize) as libc::c_int,
-        p,
-        im,
-        swr.as_mut_ptr(),
-        s1,
-        s2,
-    );
-    p = letter(
-        *l.offset(2 as libc::c_int as isize) as libc::c_int,
-        p,
-        im,
-        swr.as_mut_ptr(),
-        s1,
-        s2,
-    );
-    p = letter(
-        *l.offset(3 as libc::c_int as isize) as libc::c_int,
-        p,
-        im,
-        swr.as_mut_ptr(),
-        s1,
-        s2,
-    );
-    p = letter(
-        *l.offset(4 as libc::c_int as isize) as libc::c_int,
-        p,
-        im,
-        swr.as_mut_ptr(),
-        s1,
-        s2,
-    );
-    letter(
-        *l.offset(5 as libc::c_int as isize) as libc::c_int,
-        p,
-        im,
-        swr.as_mut_ptr(),
-        s1,
-        s2,
-    );
+    p = letter(*l.offset(0) as libc::c_int, p, im, swr.as_mut_ptr(), s1, s2);
+    p = letter(*l.offset(1) as libc::c_int, p, im, swr.as_mut_ptr(), s1, s2);
+    p = letter(*l.offset(2) as libc::c_int, p, im, swr.as_mut_ptr(), s1, s2);
+    p = letter(*l.offset(3) as libc::c_int, p, im, swr.as_mut_ptr(), s1, s2);
+    p = letter(*l.offset(4) as libc::c_int, p, im, swr.as_mut_ptr(), s1, s2);
+    letter(*l.offset(5) as libc::c_int, p, im, swr.as_mut_ptr(), s1, s2);
     dots(im);
     blur(im);
     filter(im);
     line(im, swr.as_mut_ptr(), s1);
-    *l.offset(0 as libc::c_int as isize) =
-        *letters.offset(*l.offset(0 as libc::c_int as isize) as isize) as u8;
-    *l.offset(1 as libc::c_int as isize) =
-        *letters.offset(*l.offset(1 as libc::c_int as isize) as isize) as u8;
-    *l.offset(2 as libc::c_int as isize) =
-        *letters.offset(*l.offset(2 as libc::c_int as isize) as isize) as u8;
-    *l.offset(3 as libc::c_int as isize) =
-        *letters.offset(*l.offset(3 as libc::c_int as isize) as isize) as u8;
-    *l.offset(4 as libc::c_int as isize) =
-        *letters.offset(*l.offset(4 as libc::c_int as isize) as isize) as u8;
-    *l.offset(5 as libc::c_int as isize) =
-        *letters.offset(*l.offset(5 as libc::c_int as isize) as isize) as u8;
+    *l.offset(0) = *letters.offset(*l.offset(0) as isize) as u8;
+    *l.offset(1) = *letters.offset(*l.offset(1) as isize) as u8;
+    *l.offset(2) = *letters.offset(*l.offset(2) as isize) as u8;
+    *l.offset(3) = *letters.offset(*l.offset(3) as isize) as u8;
+    *l.offset(4) = *letters.offset(*l.offset(4) as isize) as u8;
+    *l.offset(5) = *letters.offset(*l.offset(5) as isize) as u8;
     (word, img)
 }
 static mut lt0: [i8; 381] = [
