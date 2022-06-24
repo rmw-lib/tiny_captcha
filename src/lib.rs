@@ -66,7 +66,7 @@ unsafe fn letter(n: i32, pos: i32, im: *mut u8, swr: *mut u8, s1: u8, s2: u8) ->
 }
 
 unsafe fn line(im: *mut u8, swr: *mut u8, s1: u8) {
-  let mut x: i32 = 0;
+  let mut x: i32;
   let mut sk1: i32 = s1 as i32;
   x = 0_i32;
   while x < 199_i32 {
@@ -85,7 +85,6 @@ unsafe fn line(im: *mut u8, swr: *mut u8, s1: u8) {
 }
 unsafe fn dots(im: *mut u8) {
   let mut n: i32 = 0;
-  n = 0_i32;
   while n < 100_i32 {
     let v: u32 = random();
     let i: *mut u8 = im.offset(v.wrapping_rem(200 * 67) as isize);
@@ -100,9 +99,8 @@ unsafe fn dots(im: *mut u8) {
 }
 unsafe fn blur(im: *mut u8) {
   let mut i: *mut u8 = im;
-  let mut x: i32 = 0;
+  let mut x: i32;
   let mut y: i32 = 0;
-  y = 0_i32;
   while y < 68_i32 {
     x = 0_i32;
     while x < 198_i32 {
@@ -126,9 +124,8 @@ unsafe fn filter(im: *mut u8) {
   let mut om: [u8; IMG_SIZE] = [255; IMG_SIZE];
   let mut i: *mut u8 = im;
   let mut o: *mut u8 = om.as_mut_ptr();
-  let mut x: i32 = 0;
+  let mut x: i32;
   let mut y: i32 = 0;
-  y = 0_i32;
   while y < 70_i32 {
     x = 4_i32;
     while x < 200_i32 - 4_i32 {
