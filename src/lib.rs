@@ -146,8 +146,6 @@ unsafe fn letter(
     mpos + 3 as libc::c_int
 }
 
-pub static mut dr: [u32; 100] = [0; 100];
-
 unsafe fn line(mut im: *mut u8, mut swr: *mut u8, mut s1: u8) {
     let mut x: libc::c_int = 0;
     let mut sk1: libc::c_int = s1 as libc::c_int;
@@ -171,7 +169,7 @@ unsafe fn dots(mut im: *mut u8) {
     let mut n: libc::c_int = 0;
     n = 0 as libc::c_int;
     while n < 100 as libc::c_int {
-        let mut v: u32 = dr[n as usize];
+        let mut v: u32 = random();
         let mut i: *mut u8 = im.offset(
             v.wrapping_rem((200 as libc::c_int * 67 as libc::c_int) as libc::c_uint) as isize,
         );
