@@ -172,7 +172,7 @@ static mut letters: *const u8 = b"abcdafahijklmnopqrstuvwxyz\x00" as *const u8;
 // Version
 // zlib/libpng license is at the end of this file
 
-pub fn captcha() -> ([u8; 6], [u8; IMG_SIZE]) {
+pub unsafe fn captcha() -> ([u8; 6], [u8; IMG_SIZE]) {
   let mut swr: [u8; 200] = random();
   let mut s1: u8 = random();
   let mut s2: u8 = random();
