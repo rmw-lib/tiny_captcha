@@ -1,17 +1,29 @@
-use std::{env::current_exe, fs};
-use tiny_captcha::{captcha, gifsize, makegif};
+use anyhow::Result;
+use std::{env::current_exe, fs::File};
+use tiny_captcha::{captcha, HEIGHT, WIDTH};
 
-fn main() -> anyhow::Result<()> {
-    let (word, img) = unsafe { captcha() };
-    let word = unsafe { std::str::from_utf8_unchecked(&word) };
-    println!("{}", word);
-    let mut gif: [u8; gifsize as usize] = [0; gifsize as usize];
-    unsafe {
-        makegif(&img as *const u8 as *mut u8, &mut gif as *mut u8);
+fn main() -> Result<()> {
+    for i in 1..=10 {
+        let (word, mut img) = unsafe { captcha() };
+        let word = unsafe { std::str::from_utf8_unchecked(&word) };
+        println!("{}", word);
+        let exe = current_exe()?;
+        let gif_path = exe.parent().unwrap().join(format!("{}.gif", i));
+        println!("{}", gif_path.display());
+        let mut out = File::create(gif_path)?;
+
+        let mut encoder = gif::Encoder::new(&mut out, WIDTH, HEIGHT, &[0, 0, 0, 0xFF, 0xFF, 0xFF])?;
+
+        for i in img.iter_mut() {
+            if *i == 255 {
+                *i = 1;
+            }
+        }
+
+        let frame = gif::Frame::from_indexed_pixels(WIDTH, HEIGHT, &img, None);
+
+        encoder.write_frame(&frame)?;
+
+        Ok(())
     }
-    let exe = current_exe()?;
-    let gif_path = exe.parent().unwrap().join("c.gif");
-    println!("{}", gif_path.display());
-    fs::write(gif_path, &gif)?;
-    Ok(())
 }
