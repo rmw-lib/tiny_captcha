@@ -16,8 +16,6 @@ extern "C" {
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong)
         -> *mut libc::c_void;
 
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
-
 }
 
 use rand::random;
@@ -207,14 +205,9 @@ unsafe fn blur(mut im: *mut u8) {
     }
 }
 unsafe fn filter(mut im: *mut u8) {
-    let mut om: [u8; 14000] = [0; 14000];
+    let mut om: [u8; 14000] = [255; 14000];
     let mut i: *mut u8 = im;
     let mut o: *mut u8 = om.as_mut_ptr();
-    memset(
-        om.as_mut_ptr() as *mut libc::c_void,
-        0xff as libc::c_int,
-        ::std::mem::size_of::<[u8; 14000]>() as libc::c_ulong,
-    );
     let mut x: libc::c_int = 0;
     let mut y: libc::c_int = 0;
     y = 0 as libc::c_int;
