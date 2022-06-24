@@ -2,6 +2,12 @@
 name = "tiny_captcha"
 version = "0.1.0"
 edition = "2021"
+license = "Apache-2.0"
+description = "rust version tiny captcha"
+repository = "https://github.com/rmw-link/tiny_captcha"
+readme = "README.md"
+keywords = ["captcha"]
+categories = ["captcha"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
