@@ -41,10 +41,10 @@ unsafe fn letter(
   let mut sk1: i32 = s1 as i32 + pos;
   let mut sk2: i32 = s2 as i32 + pos;
   let mut mpos: i32 = pos;
-  let mut row: i32 = 0 as i32;
-  while *p as i32 != -(101 as i32) {
-    if (*p as i32) < 0 as i32 {
-      if *p as i32 == -(100 as i32) {
+  let mut row: i32 = 0_i32;
+  while *p as i32 != -101_i32 {
+    if (*p as i32) < 0_i32 {
+      if *p as i32 == -100_i32 {
         r = r.offset(200);
         i = r;
         sk1 = s1 as i32 + pos;
@@ -53,46 +53,43 @@ unsafe fn letter(
         i = i.offset(-(*p as i32) as isize)
       }
     } else {
-      if sk1 >= 200 as i32 {
-        sk1 %= 200 as i32
+      if sk1 >= 200_i32 {
+        sk1 %= 200_i32
       }
-      let mut skew: i32 = sw[sk1 as usize] as i32 / 16 as i32;
-      sk1 += (*swr.offset(i.offset(pos as isize).offset_from(r) as isize) as i32 & 0x1 as i32)
-        + 1 as i32;
-      if sk2 >= 200 as i32 {
-        sk2 %= 200 as i32
+      let mut skew: i32 = sw[sk1 as usize] as i32 / 16_i32;
+      sk1 += (*swr.offset(i.offset(pos as isize).offset_from(r) as isize) as i32 & 0x1_i32) + 1_i32;
+      if sk2 >= 200_i32 {
+        sk2 %= 200_i32
       }
-      let mut skewh: i32 = sw[sk2 as usize] as i32 / 70 as i32;
-      sk2 += *swr.offset(row as isize) as i32 & 0x1 as i32;
-      let mut x: *mut u8 = i
-        .offset((skew * 200 as i32) as isize)
-        .offset(skewh as isize);
+      let mut skewh: i32 = sw[sk2 as usize] as i32 / 70_i32;
+      sk2 += *swr.offset(row as isize) as i32 & 0x1_i32;
+      let mut x: *mut u8 = i.offset((skew * 200_i32) as isize).offset(skewh as isize);
       mpos = if mpos as i64 > i.offset(pos as isize).offset_from(r) as i64 {
         mpos as i64
       } else {
         i.offset(pos as isize).offset_from(r) as i64
       } as i32;
-      if (x.offset_from(im) as i64) < (70 as i32 * 200 as i32) as i64 {
-        *x = ((*p as i32) << 4 as i32) as u8
+      if (x.offset_from(im) as i64) < (70_i32 * 200_i32) as i64 {
+        *x = ((*p as i32) << 4_i32) as u8
       }
       i = i.offset(1)
     }
     p = p.offset(1)
   }
-  mpos + 3 as i32
+  mpos + 3_i32
 }
 
 unsafe fn line(mut im: *mut u8, mut swr: *mut u8, mut s1: u8) {
   let mut x: i32 = 0;
   let mut sk1: i32 = s1 as i32;
-  x = 0 as i32;
-  while x < 199 as i32 {
-    if sk1 >= 200 as i32 {
-      sk1 %= 200 as i32
+  x = 0_i32;
+  while x < 199_i32 {
+    if sk1 >= 200_i32 {
+      sk1 %= 200_i32
     }
-    let mut skew: i32 = sw[sk1 as usize] as i32 / 16 as i32;
-    sk1 += *swr.offset(x as isize) as i32 & (0x3 as i32 + 1 as i32);
-    let mut i: *mut u8 = im.offset((200 as i32 * (45 as i32 + skew) + x) as isize);
+    let mut skew: i32 = sw[sk1 as usize] as i32 / 16_i32;
+    sk1 += *swr.offset(x as isize) as i32 & (0x3_i32 + 1_i32);
+    let mut i: *mut u8 = im.offset((200_i32 * (45_i32 + skew) + x) as isize);
     *i.offset(0) = 0;
     *i.offset(1) = 0;
     *i.offset(200) = 0;
@@ -102,8 +99,8 @@ unsafe fn line(mut im: *mut u8, mut swr: *mut u8, mut s1: u8) {
 }
 unsafe fn dots(mut im: *mut u8) {
   let mut n: i32 = 0;
-  n = 0 as i32;
-  while n < 100 as i32 {
+  n = 0_i32;
+  while n < 100_i32 {
     let mut v: u32 = random();
     let mut i: *mut u8 = im.offset(v.wrapping_rem(200 * 67) as isize);
     *i.offset(0) = 0xff;
@@ -119,10 +116,10 @@ unsafe fn blur(mut im: *mut u8) {
   let mut i: *mut u8 = im;
   let mut x: i32 = 0;
   let mut y: i32 = 0;
-  y = 0 as i32;
-  while y < 68 as i32 {
-    x = 0 as i32;
-    while x < 198 as i32 {
+  y = 0_i32;
+  while y < 68_i32 {
+    x = 0_i32;
+    while x < 198_i32 {
       let mut c11: u32 = *i as u32;
       let mut c12: u32 = *i.offset(1) as u32;
       let mut c21: u32 = *i.offset(200) as u32;
@@ -133,7 +130,7 @@ unsafe fn blur(mut im: *mut u8) {
         .wrapping_add(c12)
         .wrapping_add(c21)
         .wrapping_add(c22)
-        .wrapping_div(4 as i32 as u32) as u8;
+        .wrapping_div(4_i32 as u32) as u8;
       x += 1
     }
     y += 1
@@ -145,14 +142,14 @@ unsafe fn filter(mut im: *mut u8) {
   let mut o: *mut u8 = om.as_mut_ptr();
   let mut x: i32 = 0;
   let mut y: i32 = 0;
-  y = 0 as i32;
-  while y < 70 as i32 {
-    x = 4 as i32;
-    while x < 200 as i32 - 4 as i32 {
-      if *i.offset(0) as i32 > 0xf0 as i32 && (*i.offset(1) as i32) < 0xf0 as i32 {
+  y = 0_i32;
+  while y < 70_i32 {
+    x = 4_i32;
+    while x < 200_i32 - 4_i32 {
+      if *i.offset(0) as i32 > 0xf0_i32 && (*i.offset(1) as i32) < 0xf0_i32 {
         *o.offset(0) = 0;
         *o.offset(1) = 0
-      } else if (*i.offset(0) as i32) < 0xf0 as i32 && *i.offset(1) as i32 > 0xf0 as i32 {
+      } else if (*i.offset(0) as i32) < 0xf0_i32 && *i.offset(1) as i32 > 0xf0_i32 {
         *o.offset(0) = 0;
         *o.offset(1) = 0
       }
@@ -177,20 +174,20 @@ pub unsafe fn captcha() -> ([u8; 6], [u8; IMG_SIZE]) {
   let mut im = &mut img as *mut u8;
   let mut l = &mut word as *mut u8;
 
-  s1 = (s1 as i32 & 0x7f as i32) as u8;
-  s2 = (s2 as i32 & 0x3f as i32) as u8;
+  s1 = (s1 as i32 & 0x7f_i32) as u8;
+  s2 = (s2 as i32 & 0x3f_i32) as u8;
   let fresh2 = &mut (*l.offset(0));
-  *fresh2 = (*fresh2 as i32 % 25 as i32) as u8;
+  *fresh2 = (*fresh2 as i32 % 25_i32) as u8;
   let fresh3 = &mut (*l.offset(1));
-  *fresh3 = (*fresh3 as i32 % 25 as i32) as u8;
+  *fresh3 = (*fresh3 as i32 % 25_i32) as u8;
   let fresh4 = &mut (*l.offset(2));
-  *fresh4 = (*fresh4 as i32 % 25 as i32) as u8;
+  *fresh4 = (*fresh4 as i32 % 25_i32) as u8;
   let fresh5 = &mut (*l.offset(3));
-  *fresh5 = (*fresh5 as i32 % 25 as i32) as u8;
+  *fresh5 = (*fresh5 as i32 % 25_i32) as u8;
   let fresh6 = &mut (*l.offset(4));
-  *fresh6 = (*fresh6 as i32 % 25 as i32) as u8;
+  *fresh6 = (*fresh6 as i32 % 25_i32) as u8;
   let fresh7 = &mut (*l.offset(5));
-  *fresh7 = (*fresh7 as i32 % 25 as i32) as u8;
+  *fresh7 = (*fresh7 as i32 % 25_i32) as u8;
   let mut p: i32 = 10;
   p = letter(*l.offset(0) as i32, p, im, swr.as_mut_ptr(), s1, s2);
   p = letter(*l.offset(1) as i32, p, im, swr.as_mut_ptr(), s1, s2);
