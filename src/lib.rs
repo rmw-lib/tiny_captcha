@@ -26,23 +26,24 @@ static mut sw: [i8; 200] = [
   -84, -81, -78, -75, -71, -68, -65, -61, -58, -54, -50, -47, -43, -39, -35, -31, -27, -23, -20,
   -16, -12, -8, -4,
 ];
+
 unsafe fn letter(
-  mut n: libc::c_int,
-  mut pos: libc::c_int,
+  mut n: i32,
+  mut pos: i32,
   mut im: *mut u8,
   mut swr: *mut u8,
   mut s1: u8,
   mut s2: u8,
-) -> libc::c_int {
+) -> i32 {
   let mut p: *mut i8 = *lt.as_mut_ptr().offset(n as isize);
   let mut r: *mut u8 = im
     .offset((200 as i32 * 16 as i32) as isize)
     .offset(pos as isize);
   let mut i: *mut u8 = r;
-  let mut sk1: libc::c_int = s1 as i32 + pos;
-  let mut sk2: libc::c_int = s2 as i32 + pos;
-  let mut mpos: libc::c_int = pos;
-  let mut row: libc::c_int = 0 as i32;
+  let mut sk1: i32 = s1 as i32 + pos;
+  let mut sk2: i32 = s2 as i32 + pos;
+  let mut mpos: i32 = pos;
+  let mut row: i32 = 0 as i32;
   while *p as i32 != -(101 as i32) {
     if (*p as i32) < 0 as i32 {
       if *p as i32 == -(100 as i32) {
@@ -57,14 +58,13 @@ unsafe fn letter(
       if sk1 >= 200 as i32 {
         sk1 %= 200 as i32
       }
-      let mut skew: libc::c_int = sw[sk1 as usize] as i32 / 16 as i32;
-      sk1 += (*swr.offset(i.offset(pos as isize).offset_from(r) as libc::c_long as isize) as i32
-        & 0x1 as i32)
+      let mut skew: i32 = sw[sk1 as usize] as i32 / 16 as i32;
+      sk1 += (*swr.offset(i.offset(pos as isize).offset_from(r) as isize) as i32 & 0x1 as i32)
         + 1 as i32;
       if sk2 >= 200 as i32 {
         sk2 %= 200 as i32
       }
-      let mut skewh: libc::c_int = sw[sk2 as usize] as i32 / 70 as i32;
+      let mut skewh: i32 = sw[sk2 as usize] as i32 / 70 as i32;
       sk2 += *swr.offset(row as isize) as i32 & 0x1 as i32;
       let mut x: *mut u8 = i
         .offset((skew * 200 as i32) as isize)
@@ -85,14 +85,14 @@ unsafe fn letter(
 }
 
 unsafe fn line(mut im: *mut u8, mut swr: *mut u8, mut s1: u8) {
-  let mut x: libc::c_int = 0;
-  let mut sk1: libc::c_int = s1 as i32;
+  let mut x: i32 = 0;
+  let mut sk1: i32 = s1 as i32;
   x = 0 as i32;
   while x < 199 as i32 {
     if sk1 >= 200 as i32 {
       sk1 %= 200 as i32
     }
-    let mut skew: libc::c_int = sw[sk1 as usize] as i32 / 16 as i32;
+    let mut skew: i32 = sw[sk1 as usize] as i32 / 16 as i32;
     sk1 += *swr.offset(x as isize) as i32 & (0x3 as i32 + 1 as i32);
     let mut i: *mut u8 = im.offset((200 as i32 * (45 as i32 + skew) + x) as isize);
     *i.offset(0) = 0 as i32 as u8;
@@ -103,7 +103,7 @@ unsafe fn line(mut im: *mut u8, mut swr: *mut u8, mut s1: u8) {
   }
 }
 unsafe fn dots(mut im: *mut u8) {
-  let mut n: libc::c_int = 0;
+  let mut n: i32 = 0;
   n = 0 as i32;
   while n < 100 as i32 {
     let mut v: u32 = random();
@@ -120,8 +120,8 @@ unsafe fn dots(mut im: *mut u8) {
 }
 unsafe fn blur(mut im: *mut u8) {
   let mut i: *mut u8 = im;
-  let mut x: libc::c_int = 0;
-  let mut y: libc::c_int = 0;
+  let mut x: i32 = 0;
+  let mut y: i32 = 0;
   y = 0 as i32;
   while y < 68 as i32 {
     x = 0 as i32;
@@ -146,8 +146,8 @@ unsafe fn filter(mut im: *mut u8) {
   let mut om: [u8; IMG_SIZE] = [255; IMG_SIZE];
   let mut i: *mut u8 = im;
   let mut o: *mut u8 = om.as_mut_ptr();
-  let mut x: libc::c_int = 0;
-  let mut y: libc::c_int = 0;
+  let mut x: i32 = 0;
+  let mut y: i32 = 0;
   y = 0 as i32;
   while y < 70 as i32 {
     x = 4 as i32;
@@ -195,7 +195,7 @@ pub unsafe fn captcha() -> ([u8; 6], [u8; IMG_SIZE]) {
   *fresh6 = (*fresh6 as i32 % 25 as i32) as u8;
   let fresh7 = &mut (*l.offset(5));
   *fresh7 = (*fresh7 as i32 % 25 as i32) as u8;
-  let mut p: libc::c_int = 30 as i32;
+  let mut p: i32 = 30 as i32;
   p = letter(*l.offset(0) as i32, p, im, swr.as_mut_ptr(), s1, s2);
   p = letter(*l.offset(1) as i32, p, im, swr.as_mut_ptr(), s1, s2);
   p = letter(*l.offset(2) as i32, p, im, swr.as_mut_ptr(), s1, s2);
