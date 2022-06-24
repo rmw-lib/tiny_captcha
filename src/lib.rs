@@ -24,15 +24,16 @@ extern "C" {
 
     fn read(__fd: libc::c_int, __buf: *mut libc::c_void, __nbytes: size_t) -> ssize_t;
 }
-pub type uint8_t = libc::c_uchar;
-pub type int8_t = libc::c_schar;
+
+use rand::random;
+
 pub type uint32_t = libc::c_uint;
 pub type ssize_t = __ssize_t;
 pub type __ssize_t = libc::c_long;
 pub type size_t = libc::c_ulong;
 pub const gifsize: libc::c_int = 17646 as libc::c_int;
 #[no_mangle]
-pub unsafe extern "C" fn makegif(mut im: *mut libc::c_uchar, mut gif: *mut libc::c_uchar) {
+pub unsafe extern "C" fn makegif(mut im: *mut u8, mut gif: *mut u8) {
     // tag ; widthxheight ; GCT:0:0:7 ; bgcolor + aspect // GCT
     // Image Separator // left x top // widthxheight // Flags
     // LZW code size
@@ -43,8 +44,8 @@ pub unsafe extern "C" fn makegif(mut im: *mut libc::c_uchar, mut gif: *mut libc:
                 1 as libc::c_int) as libc::c_ulong); // Data length 5*50=250
     let mut x: libc::c_int = 0; // bbb10000
     let mut y: libc::c_int = 0; // b10000xb
-    let mut i: *mut libc::c_uchar = im; // 0000xbbb
-    let mut p: *mut libc::c_uchar = gif
+    let mut i: *mut u8 = im; // 0000xbbb
+    let mut p: *mut u8 = gif
         .offset(13 as libc::c_int as isize)
         .offset(48 as libc::c_int as isize)
         .offset(10 as libc::c_int as isize)
@@ -53,29 +54,28 @@ pub unsafe extern "C" fn makegif(mut im: *mut libc::c_uchar, mut gif: *mut libc:
     while y < 70 as libc::c_int {
         let fresh0 = p;
         p = p.offset(1);
-        *fresh0 = 250 as libc::c_int as libc::c_uchar;
+        *fresh0 = 250 as libc::c_int as u8;
         x = 0 as libc::c_int;
         while x < 50 as libc::c_int {
-            let mut a: libc::c_uchar = (*i.offset(0 as libc::c_int as isize) as libc::c_int
-                >> 4 as libc::c_int) as libc::c_uchar;
-            let mut b: libc::c_uchar = (*i.offset(1 as libc::c_int as isize) as libc::c_int
-                >> 4 as libc::c_int) as libc::c_uchar;
-            let mut c: libc::c_uchar = (*i.offset(2 as libc::c_int as isize) as libc::c_int
-                >> 4 as libc::c_int) as libc::c_uchar;
-            let mut d: libc::c_uchar = (*i.offset(3 as libc::c_int as isize) as libc::c_int
-                >> 4 as libc::c_int) as libc::c_uchar;
+            let mut a: u8 =
+                (*i.offset(0 as libc::c_int as isize) as libc::c_int >> 4 as libc::c_int) as u8;
+            let mut b: u8 =
+                (*i.offset(1 as libc::c_int as isize) as libc::c_int >> 4 as libc::c_int) as u8;
+            let mut c: u8 =
+                (*i.offset(2 as libc::c_int as isize) as libc::c_int >> 4 as libc::c_int) as u8;
+            let mut d: u8 =
+                (*i.offset(3 as libc::c_int as isize) as libc::c_int >> 4 as libc::c_int) as u8;
             *p.offset(0 as libc::c_int as isize) =
-                (16 as libc::c_int | (a as libc::c_int) << 5 as libc::c_int) as libc::c_uchar;
+                (16 as libc::c_int | (a as libc::c_int) << 5 as libc::c_int) as u8;
             *p.offset(1 as libc::c_int as isize) = (a as libc::c_int >> 3 as libc::c_int
                 | 64 as libc::c_int
                 | (b as libc::c_int) << 7 as libc::c_int)
-                as libc::c_uchar;
-            *p.offset(2 as libc::c_int as isize) =
-                (b as libc::c_int >> 1 as libc::c_int) as libc::c_uchar;
+                as u8;
+            *p.offset(2 as libc::c_int as isize) = (b as libc::c_int >> 1 as libc::c_int) as u8;
             *p.offset(3 as libc::c_int as isize) =
-                (1 as libc::c_int | (c as libc::c_int) << 1 as libc::c_int) as libc::c_uchar;
+                (1 as libc::c_int | (c as libc::c_int) << 1 as libc::c_int) as u8;
             *p.offset(4 as libc::c_int as isize) =
-                (4 as libc::c_int | (d as libc::c_int) << 3 as libc::c_int) as libc::c_uchar;
+                (4 as libc::c_int | (d as libc::c_int) << 3 as libc::c_int) as u8;
             i = i.offset(4 as libc::c_int as isize);
             p = p.offset(5 as libc::c_int as isize);
             x += 1
@@ -90,7 +90,7 @@ pub unsafe extern "C" fn makegif(mut im: *mut libc::c_uchar, mut gif: *mut libc:
         4 as libc::c_int as libc::c_ulong,
     );
 }
-static mut sw: [int8_t; 200] = [
+static mut sw: [i8; 200] = [
     0, 4, 8, 12, 16, 20, 23, 27, 31, 35, 39, 43, 47, 50, 54, 58, 61, 65, 68, 71, 75, 78, 81, 84,
     87, 90, 93, 96, 98, 101, 103, 105, 108, 110, 112, 114, 115, 117, 119, 120, 121, 122, 123, 124,
     125, 126, 126, 127, 127, 127, 127, 127, 127, 127, 126, 126, 125, 124, 123, 122, 121, 120, 119,
@@ -106,16 +106,16 @@ static mut sw: [int8_t; 200] = [
 unsafe extern "C" fn letter(
     mut n: libc::c_int,
     mut pos: libc::c_int,
-    mut im: *mut libc::c_uchar,
-    mut swr: *mut libc::c_uchar,
-    mut s1: uint8_t,
-    mut s2: uint8_t,
+    mut im: *mut u8,
+    mut swr: *mut u8,
+    mut s1: u8,
+    mut s2: u8,
 ) -> libc::c_int {
-    let mut p: *mut int8_t = *lt.as_mut_ptr().offset(n as isize);
-    let mut r: *mut libc::c_uchar = im
+    let mut p: *mut i8 = *lt.as_mut_ptr().offset(n as isize);
+    let mut r: *mut u8 = im
         .offset((200 as libc::c_int * 16 as libc::c_int) as isize)
         .offset(pos as isize);
-    let mut i: *mut libc::c_uchar = r;
+    let mut i: *mut u8 = r;
     let mut sk1: libc::c_int = s1 as libc::c_int + pos;
     let mut sk2: libc::c_int = s2 as libc::c_int + pos;
     let mut mpos: libc::c_int = pos;
@@ -144,7 +144,7 @@ unsafe extern "C" fn letter(
             }
             let mut skewh: libc::c_int = sw[sk2 as usize] as libc::c_int / 70 as libc::c_int;
             sk2 += *swr.offset(row as isize) as libc::c_int & 0x1 as libc::c_int;
-            let mut x: *mut libc::c_uchar = i
+            let mut x: *mut u8 = i
                 .offset((skew * 200 as libc::c_int) as isize)
                 .offset(skewh as isize);
             mpos = if mpos as libc::c_long > i.offset(pos as isize).offset_from(r) as libc::c_long {
@@ -155,7 +155,7 @@ unsafe extern "C" fn letter(
             if (x.offset_from(im) as libc::c_long)
                 < (70 as libc::c_int * 200 as libc::c_int) as libc::c_long
             {
-                *x = ((*p as libc::c_int) << 4 as libc::c_int) as libc::c_uchar
+                *x = ((*p as libc::c_int) << 4 as libc::c_int) as u8
             }
             i = i.offset(1)
         }
@@ -165,11 +165,7 @@ unsafe extern "C" fn letter(
 }
 #[no_mangle]
 pub static mut dr: [uint32_t; 100] = [0; 100];
-unsafe extern "C" fn line(
-    mut im: *mut libc::c_uchar,
-    mut swr: *mut libc::c_uchar,
-    mut s1: uint8_t,
-) {
+unsafe extern "C" fn line(mut im: *mut u8, mut swr: *mut u8, mut s1: u8) {
     let mut x: libc::c_int = 0;
     let mut sk1: libc::c_int = s1 as libc::c_int;
     x = 0 as libc::c_int;
@@ -179,34 +175,34 @@ unsafe extern "C" fn line(
         }
         let mut skew: libc::c_int = sw[sk1 as usize] as libc::c_int / 16 as libc::c_int;
         sk1 += *swr.offset(x as isize) as libc::c_int & (0x3 as libc::c_int + 1 as libc::c_int);
-        let mut i: *mut libc::c_uchar =
+        let mut i: *mut u8 =
             im.offset((200 as libc::c_int * (45 as libc::c_int + skew) + x) as isize);
-        *i.offset(0 as libc::c_int as isize) = 0 as libc::c_int as libc::c_uchar;
-        *i.offset(1 as libc::c_int as isize) = 0 as libc::c_int as libc::c_uchar;
-        *i.offset(200 as libc::c_int as isize) = 0 as libc::c_int as libc::c_uchar;
-        *i.offset(201 as libc::c_int as isize) = 0 as libc::c_int as libc::c_uchar;
+        *i.offset(0 as libc::c_int as isize) = 0 as libc::c_int as u8;
+        *i.offset(1 as libc::c_int as isize) = 0 as libc::c_int as u8;
+        *i.offset(200 as libc::c_int as isize) = 0 as libc::c_int as u8;
+        *i.offset(201 as libc::c_int as isize) = 0 as libc::c_int as u8;
         x += 1
     }
 }
-unsafe extern "C" fn dots(mut im: *mut libc::c_uchar) {
+unsafe extern "C" fn dots(mut im: *mut u8) {
     let mut n: libc::c_int = 0;
     n = 0 as libc::c_int;
     while n < 100 as libc::c_int {
         let mut v: uint32_t = dr[n as usize];
-        let mut i: *mut libc::c_uchar = im.offset(
+        let mut i: *mut u8 = im.offset(
             v.wrapping_rem((200 as libc::c_int * 67 as libc::c_int) as libc::c_uint) as isize,
         );
-        *i.offset(0 as libc::c_int as isize) = 0xff as libc::c_int as libc::c_uchar;
-        *i.offset(1 as libc::c_int as isize) = 0xff as libc::c_int as libc::c_uchar;
-        *i.offset(2 as libc::c_int as isize) = 0xff as libc::c_int as libc::c_uchar;
-        *i.offset(200 as libc::c_int as isize) = 0xff as libc::c_int as libc::c_uchar;
-        *i.offset(201 as libc::c_int as isize) = 0xff as libc::c_int as libc::c_uchar;
-        *i.offset(202 as libc::c_int as isize) = 0xff as libc::c_int as libc::c_uchar;
+        *i.offset(0 as libc::c_int as isize) = 0xff as libc::c_int as u8;
+        *i.offset(1 as libc::c_int as isize) = 0xff as libc::c_int as u8;
+        *i.offset(2 as libc::c_int as isize) = 0xff as libc::c_int as u8;
+        *i.offset(200 as libc::c_int as isize) = 0xff as libc::c_int as u8;
+        *i.offset(201 as libc::c_int as isize) = 0xff as libc::c_int as u8;
+        *i.offset(202 as libc::c_int as isize) = 0xff as libc::c_int as u8;
         n += 1
     }
 }
-unsafe extern "C" fn blur(mut im: *mut libc::c_uchar) {
-    let mut i: *mut libc::c_uchar = im;
+unsafe extern "C" fn blur(mut im: *mut u8) {
+    let mut i: *mut u8 = im;
     let mut x: libc::c_int = 0;
     let mut y: libc::c_int = 0;
     y = 0 as libc::c_int;
@@ -223,21 +219,20 @@ unsafe extern "C" fn blur(mut im: *mut libc::c_uchar) {
                 .wrapping_add(c12)
                 .wrapping_add(c21)
                 .wrapping_add(c22)
-                .wrapping_div(4 as libc::c_int as libc::c_uint)
-                as libc::c_uchar;
+                .wrapping_div(4 as libc::c_int as libc::c_uint) as u8;
             x += 1
         }
         y += 1
     }
 }
-unsafe extern "C" fn filter(mut im: *mut libc::c_uchar) {
-    let mut om: [libc::c_uchar; 14000] = [0; 14000];
-    let mut i: *mut libc::c_uchar = im;
-    let mut o: *mut libc::c_uchar = om.as_mut_ptr();
+unsafe extern "C" fn filter(mut im: *mut u8) {
+    let mut om: [u8; 14000] = [0; 14000];
+    let mut i: *mut u8 = im;
+    let mut o: *mut u8 = om.as_mut_ptr();
     memset(
         om.as_mut_ptr() as *mut libc::c_void,
         0xff as libc::c_int,
-        ::std::mem::size_of::<[libc::c_uchar; 14000]>() as libc::c_ulong,
+        ::std::mem::size_of::<[u8; 14000]>() as libc::c_ulong,
     );
     let mut x: libc::c_int = 0;
     let mut y: libc::c_int = 0;
@@ -248,13 +243,13 @@ unsafe extern "C" fn filter(mut im: *mut libc::c_uchar) {
             if *i.offset(0 as libc::c_int as isize) as libc::c_int > 0xf0 as libc::c_int
                 && (*i.offset(1 as libc::c_int as isize) as libc::c_int) < 0xf0 as libc::c_int
             {
-                *o.offset(0 as libc::c_int as isize) = 0 as libc::c_int as libc::c_uchar;
-                *o.offset(1 as libc::c_int as isize) = 0 as libc::c_int as libc::c_uchar
+                *o.offset(0 as libc::c_int as isize) = 0 as libc::c_int as u8;
+                *o.offset(1 as libc::c_int as isize) = 0 as libc::c_int as u8
             } else if (*i.offset(0 as libc::c_int as isize) as libc::c_int) < 0xf0 as libc::c_int
                 && *i.offset(1 as libc::c_int as isize) as libc::c_int > 0xf0 as libc::c_int
             {
-                *o.offset(0 as libc::c_int as isize) = 0 as libc::c_int as libc::c_uchar;
-                *o.offset(1 as libc::c_int as isize) = 0 as libc::c_int as libc::c_uchar
+                *o.offset(0 as libc::c_int as isize) = 0 as libc::c_int as u8;
+                *o.offset(1 as libc::c_int as isize) = 0 as libc::c_int as u8
             }
             i = i.offset(1);
             o = o.offset(1);
@@ -265,7 +260,7 @@ unsafe extern "C" fn filter(mut im: *mut libc::c_uchar) {
     memmove(
         im as *mut libc::c_void,
         om.as_mut_ptr() as *const libc::c_void,
-        ::std::mem::size_of::<[libc::c_uchar; 14000]>() as libc::c_ulong,
+        ::std::mem::size_of::<[u8; 14000]>() as libc::c_ulong,
     );
 }
 static mut letters: *const libc::c_char =
@@ -273,10 +268,10 @@ static mut letters: *const libc::c_char =
 // Version
 // zlib/libpng license is at the end of this file
 #[no_mangle]
-pub unsafe extern "C" fn captcha(mut im: *mut libc::c_uchar, mut l: *mut libc::c_uchar) {
-    let mut swr: [libc::c_uchar; 200] = [0; 200];
-    let mut s1: uint8_t = 0;
-    let mut s2: uint8_t = 0;
+pub unsafe extern "C" fn captcha(mut im: *mut u8, mut l: *mut u8) {
+    let mut swr: [u8; 200] = [0; 200];
+    let mut s1: u8 = random();
+    let mut s2: u8 = random();
     let mut f: i32 = open(
         b"/dev/urandom\x00" as *const u8 as *const libc::c_char,
         0 as libc::c_int,
@@ -294,12 +289,12 @@ pub unsafe extern "C" fn captcha(mut im: *mut libc::c_uchar, mut l: *mut libc::c
     );
     read(
         f,
-        &mut s1 as *mut uint8_t as *mut libc::c_void,
+        &mut s1 as *mut u8 as *mut libc::c_void,
         1 as libc::c_int as size_t,
     );
     read(
         f,
-        &mut s2 as *mut uint8_t as *mut libc::c_void,
+        &mut s2 as *mut u8 as *mut libc::c_void,
         1 as libc::c_int as size_t,
     );
     close(f);
@@ -308,20 +303,20 @@ pub unsafe extern "C" fn captcha(mut im: *mut libc::c_uchar, mut l: *mut libc::c
         0xff as libc::c_int,
         (200 as libc::c_int * 70 as libc::c_int) as libc::c_ulong,
     );
-    s1 = (s1 as libc::c_int & 0x7f as libc::c_int) as uint8_t;
-    s2 = (s2 as libc::c_int & 0x3f as libc::c_int) as uint8_t;
+    s1 = (s1 as libc::c_int & 0x7f as libc::c_int) as u8;
+    s2 = (s2 as libc::c_int & 0x3f as libc::c_int) as u8;
     let fresh2 = &mut (*l.offset(0 as libc::c_int as isize));
-    *fresh2 = (*fresh2 as libc::c_int % 25 as libc::c_int) as libc::c_uchar;
+    *fresh2 = (*fresh2 as libc::c_int % 25 as libc::c_int) as u8;
     let fresh3 = &mut (*l.offset(1 as libc::c_int as isize));
-    *fresh3 = (*fresh3 as libc::c_int % 25 as libc::c_int) as libc::c_uchar;
+    *fresh3 = (*fresh3 as libc::c_int % 25 as libc::c_int) as u8;
     let fresh4 = &mut (*l.offset(2 as libc::c_int as isize));
-    *fresh4 = (*fresh4 as libc::c_int % 25 as libc::c_int) as libc::c_uchar;
+    *fresh4 = (*fresh4 as libc::c_int % 25 as libc::c_int) as u8;
     let fresh5 = &mut (*l.offset(3 as libc::c_int as isize));
-    *fresh5 = (*fresh5 as libc::c_int % 25 as libc::c_int) as libc::c_uchar;
+    *fresh5 = (*fresh5 as libc::c_int % 25 as libc::c_int) as u8;
     let fresh6 = &mut (*l.offset(4 as libc::c_int as isize));
-    *fresh6 = (*fresh6 as libc::c_int % 25 as libc::c_int) as libc::c_uchar;
+    *fresh6 = (*fresh6 as libc::c_int % 25 as libc::c_int) as u8;
     let fresh7 = &mut (*l.offset(5 as libc::c_int as isize));
-    *fresh7 = (*fresh7 as libc::c_int % 25 as libc::c_int) as libc::c_uchar;
+    *fresh7 = (*fresh7 as libc::c_int % 25 as libc::c_int) as u8;
     let mut p: libc::c_int = 30 as libc::c_int;
     p = letter(
         *l.offset(0 as libc::c_int as isize) as libc::c_int,
@@ -376,19 +371,19 @@ pub unsafe extern "C" fn captcha(mut im: *mut libc::c_uchar, mut l: *mut libc::c
     filter(im);
     line(im, swr.as_mut_ptr(), s1);
     *l.offset(0 as libc::c_int as isize) =
-        *letters.offset(*l.offset(0 as libc::c_int as isize) as isize) as libc::c_uchar;
+        *letters.offset(*l.offset(0 as libc::c_int as isize) as isize) as u8;
     *l.offset(1 as libc::c_int as isize) =
-        *letters.offset(*l.offset(1 as libc::c_int as isize) as isize) as libc::c_uchar;
+        *letters.offset(*l.offset(1 as libc::c_int as isize) as isize) as u8;
     *l.offset(2 as libc::c_int as isize) =
-        *letters.offset(*l.offset(2 as libc::c_int as isize) as isize) as libc::c_uchar;
+        *letters.offset(*l.offset(2 as libc::c_int as isize) as isize) as u8;
     *l.offset(3 as libc::c_int as isize) =
-        *letters.offset(*l.offset(3 as libc::c_int as isize) as isize) as libc::c_uchar;
+        *letters.offset(*l.offset(3 as libc::c_int as isize) as isize) as u8;
     *l.offset(4 as libc::c_int as isize) =
-        *letters.offset(*l.offset(4 as libc::c_int as isize) as isize) as libc::c_uchar;
+        *letters.offset(*l.offset(4 as libc::c_int as isize) as isize) as u8;
     *l.offset(5 as libc::c_int as isize) =
-        *letters.offset(*l.offset(5 as libc::c_int as isize) as isize) as libc::c_uchar;
+        *letters.offset(*l.offset(5 as libc::c_int as isize) as isize) as u8;
 }
-static mut lt0: [int8_t; 381] = [
+static mut lt0: [i8; 381] = [
     -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100,
     -100, -4, 11, 7, 5, 3, 1, 0, 0, 0, 1, 3, 7, 13, -100, -2, 11, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 9, -100, -1, 7, 0, 0, 0, 0, 0, 0, 3, 9, 11, 9, 3, 0, 0, 0, 0, 13, -100, 9, 0, 0, 0, 0, 0,
@@ -405,7 +400,7 @@ static mut lt0: [int8_t; 381] = [
     0, 0, 0, 11, -100, -2, 13, 7, 3, 0, 0, 0, 3, 7, 13, -5, 9, 0, 1, 3, 9, -100, -100, -100, -100,
     -100, -100, -100, -100, -100, -100, -101,
 ];
-static mut lt1: [int8_t; 480] = [
+static mut lt1: [i8; 480] = [
     -100, -100, -4, 13, 5, 0, 3, -100, -3, 11, 1, 0, 0, 0, 7, -100, -2, 7, 0, 0, 0, 0, 0, 3, -100,
     13, 3, 0, 0, 0, 0, 0, 0, 5, -100, 1, 0, 0, 0, 0, 0, 0, 0, 9, -100, 1, 0, 0, 0, 0, 0, 0, 0, 13,
     -100, 13, 3, 0, 0, 0, 0, 0, 1, -100, -2, 5, 0, 0, 0, 0, 5, -100, -3, 0, 0, 0, 0, 9, -100, -3,
@@ -426,7 +421,7 @@ static mut lt1: [int8_t; 480] = [
     -3, 9, 11, -4, 7, 3, 1, 0, 0, 1, 5, 9, 13, -100, -100, -100, -100, -100, -100, -100, -100,
     -100, -100, -101,
 ];
-static mut lt2: [int8_t; 285] = [
+static mut lt2: [i8; 285] = [
     -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100,
     -100, -6, 13, 7, 3, 1, 0, 0, 1, 3, 7, 13, -100, -5, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 13,
     -100, -3, 13, 3, 0, 0, 0, 5, 13, 13, 7, 0, 0, 0, 0, 0, 1, 13, -100, -2, 13, 1, 0, 0, 0, 9, -4,
@@ -440,7 +435,7 @@ static mut lt2: [int8_t; 285] = [
     0, 3, 13, -100, -7, 11, 7, 3, 1, 0, 1, 3, 7, 11, -100, -100, -100, -100, -100, -100, -100,
     -100, -100, -101,
 ];
-static mut lt3: [int8_t; 478] = [
+static mut lt3: [i8; 478] = [
     -100, -100, -100, -100, -18, 11, 3, 0, -100, -16, 13, 3, 0, 0, 0, -100, -14, 9, 3, 0, 0, 0, 0,
     0, -100, -13, 3, 0, 0, 0, 0, 0, 0, 0, -100, -13, 0, 0, 0, 0, 0, 0, 0, 0, -100, -13, 9, 1, 0, 0,
     0, 0, 0, 0, -100, -15, 13, 5, 0, 0, 0, 0, -100, -17, 1, 0, 0, 0, -100, -17, 3, 0, 0, 0, -100,
@@ -461,7 +456,7 @@ static mut lt3: [int8_t; 478] = [
     0, 0, 3, 7, 13, -1, 11, 1, 0, 1, 5, 7, 11, -100, -18, 13, -100, -100, -100, -100, -100, -100,
     -100, -100, -101,
 ];
-static mut lt5: [int8_t; 345] = [
+static mut lt5: [i8; 345] = [
     -100, -100, -100, -100, -9, 13, 9, 3, 1, 0, 1, 5, 13, -100, -8, 7, 0, 0, 0, 0, 0, 0, 0, 3,
     -100, -7, 3, 0, 0, 0, 0, 0, 0, 0, 0, 1, -100, -6, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, -100, -5,
     13, 0, 0, 3, 13, 9, 1, 0, 0, 0, 0, 11, -100, -5, 9, 0, 0, 13, -2, 13, 5, 0, 1, 9, -100, -5, 5,
@@ -477,7 +472,7 @@ static mut lt5: [int8_t; 345] = [
     0, 0, 0, 1, 11, -100, -1, 7, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 7, 13, -100, -100, -100, -100,
     -100, -100, -100, -100, -100, -100, -101,
 ];
-static mut lt7: [int8_t; 434] = [
+static mut lt7: [i8; 434] = [
     -100, -100, -100, -100, -4, 13, 7, 1, 9, -100, -2, 13, 7, 0, 0, 0, 3, -100, -1, 7, 0, 0, 0, 0,
     0, 5, -100, 1, 0, 0, 0, 0, 0, 0, 7, -100, 3, 0, 0, 0, 0, 0, 0, 7, -100, 13, 7, 0, 0, 0, 0, 0,
     9, -100, -2, 5, 0, 0, 0, 0, 9, -100, -2, 11, 0, 0, 0, 0, 9, -100, -3, 0, 0, 0, 0, 9, -100, -3,
@@ -496,7 +491,7 @@ static mut lt7: [int8_t; 434] = [
     0, 0, 0, 7, -100, 5, 0, 0, 0, 0, 0, 0, 0, 0, 3, -5, 1, 0, 0, 0, 0, 0, 0, 1, 3, 11, -100, -100,
     -100, -100, -100, -100, -100, -100, -100, -100, -101,
 ];
-static mut lt8: [int8_t; 261] = [
+static mut lt8: [i8; 261] = [
     -100, -100, -100, -100, -3, 5, 1, 0, 3, 11, -100, -2, 7, 0, 0, 0, 0, 0, 11, -100, -2, 1, 0, 0,
     0, 0, 0, 5, -100, -2, 0, 0, 0, 0, 0, 0, 5, -100, -2, 5, 0, 0, 0, 0, 0, 11, -100, -3, 7, 0, 0,
     3, 9, -100, -4, 13, -100, -100, -100, -100, -100, -100, -100, -4, 11, 3, 0, 9, -100, -2, 9, 3,
@@ -509,7 +504,7 @@ static mut lt8: [int8_t; 261] = [
     7, 0, 0, 0, 0, 0, 0, 0, 0, 3, -100, 9, 5, 1, 1, 0, 0, 1, 1, 3, 5, -100, -100, -100, -100, -100,
     -100, -100, -100, -100, -100, -101,
 ];
-static mut lt9: [int8_t; 297] = [
+static mut lt9: [i8; 297] = [
     -100, -100, -100, -100, -6, 5, 0, 1, 5, 13, -100, -5, 5, 0, 0, 0, 0, 1, -100, -5, 1, 0, 0, 0,
     0, 0, 13, -100, -5, 0, 0, 0, 0, 0, 0, -100, -5, 5, 0, 0, 0, 0, 3, -100, -6, 7, 1, 0, 5, 13,
     -100, -100, -100, -100, -100, -100, -100, -100, -6, 13, 7, 3, 0, 13, -100, -5, 7, 0, 0, 0, 0,
@@ -523,7 +518,7 @@ static mut lt9: [int8_t; 297] = [
     -100, 11, 0, 0, 0, 5, 5, 0, 0, 5, -100, 3, 0, 0, 0, 0, 0, 0, 3, -100, 0, 0, 0, 0, 0, 0, 0, 13,
     -100, 1, 0, 0, 0, 0, 0, 11, -100, 13, 3, 0, 0, 3, 11, -100, -100, -101,
 ];
-static mut lt10: [int8_t; 466] = [
+static mut lt10: [i8; 466] = [
     -100, -100, -100, -100, -6, 9, 1, 13, -100, -3, 13, 5, 0, 0, 0, 11, -100, -1, 13, 5, 0, 0, 0,
     0, 0, 11, -100, 13, 1, 0, 0, 0, 0, 0, 0, 11, -100, 3, 0, 0, 0, 0, 0, 0, 0, 11, -100, 11, 3, 0,
     0, 0, 0, 0, 0, 11, -100, -2, 13, 0, 0, 0, 0, 0, 11, -100, -3, 9, 0, 0, 0, 0, 11, -100, -4, 0,
@@ -543,7 +538,7 @@ static mut lt10: [int8_t; 466] = [
     3, -100, -1, 7, 1, 0, 0, 0, 0, 0, 0, 0, 0, 7, -4, 3, 0, 0, 0, 0, 0, 0, 1, 1, 5, 9, -100, -100,
     -100, -100, -100, -100, -100, -100, -100, -100, -101,
 ];
-static mut lt11: [int8_t; 307] = [
+static mut lt11: [i8; 307] = [
     -100, -100, -100, -6, 11, 7, 11, -100, -4, 11, 3, 0, 0, 5, -100, -3, 5, 0, 0, 0, 0, 5, -100,
     -1, 11, 1, 0, 0, 0, 0, 0, 7, -100, 7, 0, 0, 0, 0, 0, 0, 0, 7, -100, 0, 0, 0, 0, 0, 0, 0, 0, 9,
     -100, 7, 0, 0, 0, 0, 0, 0, 0, 9, -100, -2, 9, 1, 0, 0, 0, 0, 9, -100, -3, 11, 0, 0, 0, 0, 11,
@@ -558,7 +553,7 @@ static mut lt11: [int8_t; 307] = [
     -100, -1, 5, 1, 0, 0, 0, 0, 0, 0, 0, 1, 11, -100, -100, -100, -100, -100, -100, -100, -100,
     -100, -100, -101,
 ];
-static mut lt12: [int8_t; 584] = [
+static mut lt12: [i8; 584] = [
     -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100,
     -100, -5, 11, 5, 0, -21, 7, 1, 0, 3, 9, -100, -4, 7, 0, 0, 0, 13, -4, 11, 5, 1, 1, 0, 1, 7, -7,
     11, 3, 0, 0, 0, 0, 0, 5, -100, -2, 11, 1, 0, 0, 0, 0, 11, -2, 9, 1, 0, 0, 0, 0, 0, 0, 0, 9, -4,
@@ -582,7 +577,7 @@ static mut lt12: [int8_t; 584] = [
     0, 0, 0, 1, 9, -4, 1, 0, 0, 0, 0, 0, 0, 0, 1, 5, -5, 1, 0, 0, 0, 0, 0, 0, 0, 0, 7, -100, -100,
     -100, -100, -100, -100, -100, -100, -100, -100, -101,
 ];
-static mut lt13: [int8_t; 401] = [
+static mut lt13: [i8; 401] = [
     -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100,
     -100, -3, 13, 7, 3, 0, 13, -5, 13, 7, 1, 0, 0, 3, 7, -100, -2, 5, 0, 0, 0, 0, -4, 13, 3, 0, 0,
     0, 0, 0, 0, 0, 7, -100, 7, 1, 0, 0, 0, 0, 0, -3, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, -100, 1,
@@ -600,7 +595,7 @@ static mut lt13: [int8_t; 401] = [
     0, 0, 0, 0, 0, 0, 0, 3, -4, 5, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, -100, -100, -100, -100, -100,
     -100, -100, -100, -100, -100, -101,
 ];
-static mut lt14: [int8_t; 358] = [
+static mut lt14: [i8; 358] = [
     -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100,
     -100, -7, 13, 7, 3, 1, 0, 0, 1, 5, 9, -100, -6, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 7, -100, -4,
     11, 1, 0, 0, 1, 9, 13, -1, 13, 11, 5, 0, 0, 0, 3, 13, -100, -3, 11, 0, 0, 0, 3, 13, -6, 13, 1,
@@ -616,7 +611,7 @@ static mut lt14: [int8_t; 358] = [
     0, 0, 1, 7, 13, -3, 9, 0, 0, 0, 7, -100, -6, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 11, -100, -7, 13,
     7, 3, 0, 0, 0, 0, 3, 11, -100, -100, -100, -100, -100, -100, -100, -100, -100, -101,
 ];
-static mut lt15: [int8_t; 455] = [
+static mut lt15: [i8; 455] = [
     -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100,
     -6, 11, 7, -100, -4, 11, 3, 0, 0, 7, 11, 5, 3, 0, 0, 0, 1, 5, 9, -100, -2, 11, 3, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, -100, 13, 5, 0, 0, 0, 0, 0, 0, 0, 1, 7, 11, 13, -1, 13, 3, 0,
@@ -636,7 +631,7 @@ static mut lt15: [int8_t; 455] = [
     0, 9, -100, -1, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, -100, -1, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     5, -100, -101,
 ];
-static mut lt16: [int8_t; 442] = [
+static mut lt16: [i8; 442] = [
     -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100,
     -19, 7, 11, -100, -6, 11, 5, 1, 0, 0, 1, 5, 11, -4, 5, 0, 3, -100, -4, 13, 3, 0, 0, 0, 0, 0, 0,
     0, 0, 1, 11, 13, 5, 0, 0, 1, -100, -3, 13, 1, 0, 0, 1, 5, 11, -3, 11, 3, 0, 0, 0, 0, 0, 3,
@@ -655,7 +650,7 @@ static mut lt16: [int8_t; 442] = [
     0, 0, 13, -100, -15, 9, 0, 0, 0, 0, 11, -100, -15, 1, 0, 0, 0, 0, 5, -100, -12, 7, 5, 1, 0, 0,
     0, 0, 0, 0, 1, 3, 9, -100, -11, 13, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, -100, -101,
 ];
-static mut lt17: [int8_t; 278] = [
+static mut lt17: [i8; 278] = [
     -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100,
     -100, -3, 13, 5, 0, 3, -5, 9, 3, 1, 0, 0, 3, -100, -1, 11, 3, 0, 0, 0, 0, -3, 7, 0, 0, 0, 0, 0,
     0, 0, 5, -100, 9, 0, 0, 0, 0, 0, 0, -2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 1, -100, 0, 0, 0, 0, 0, 0,
@@ -668,7 +663,7 @@ static mut lt17: [int8_t; 278] = [
     -1, 13, 3, 0, 0, 0, 0, 1, 13, -100, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, -100, 5, 1, 0, 0, 0,
     0, 0, 0, 0, 0, 3, 13, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -101,
 ];
-static mut lt18: [int8_t; 292] = [
+static mut lt18: [i8; 292] = [
     -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100,
     -100, -3, 13, 7, 1, 0, 1, 3, 9, 11, 9, 9, 13, -100, -2, 13, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5,
     -100, -2, 1, 0, 5, 13, -1, 13, 11, 3, 0, 0, 0, 1, -100, -1, 9, 0, 1, -6, 9, 0, 0, 0, 13, -100,
@@ -682,7 +677,7 @@ static mut lt18: [int8_t; 292] = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 13, -100, -1, 5, 3, 9, 7, 3, 1, 0, 0, 1, 5, 11, -100, -100,
     -100, -100, -100, -100, -100, -100, -100, -101,
 ];
-static mut lt19: [int8_t; 292] = [
+static mut lt19: [i8; 292] = [
     -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -6, 5, 0, 5, -100, -5, 13, 0, 0, 0,
     7, -100, -5, 7, 0, 0, 0, 9, -100, -5, 3, 0, 0, 0, 13, -100, -4, 11, 0, 0, 0, 0, -100, -4, 3, 0,
     0, 0, 0, -100, -3, 5, 0, 0, 0, 0, 1, -100, -2, 3, 0, 0, 0, 0, 0, 7, -100, 13, 1, 0, 0, 0, 0, 0,
@@ -696,7 +691,7 @@ static mut lt19: [int8_t; 292] = [
     -100, -5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 5, -100, -6, 9, 3, 1, 0, 0, 1, 5, 11, -100, -100, -100,
     -100, -100, -100, -100, -100, -100, -101,
 ];
-static mut lt20: [int8_t; 426] = [
+static mut lt20: [i8; 426] = [
     -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100,
     -4, 13, 9, 1, 0, 13, -11, 11, 5, 1, 5, -100, -2, 11, 3, 0, 0, 0, 0, 11, -8, 11, 5, 0, 0, 0, 0,
     1, -100, 13, 3, 0, 0, 0, 0, 0, 0, 11, -6, 7, 1, 0, 0, 0, 0, 0, 0, 7, -100, 5, 0, 0, 0, 0, 0, 0,
@@ -715,7 +710,7 @@ static mut lt20: [int8_t; 426] = [
     0, -100, -6, 13, 5, 1, 0, 1, 3, 9, -6, 3, 1, 3, 7, 9, 11, 13, -100, -100, -100, -100, -100,
     -100, -100, -100, -100, -100, -101,
 ];
-static mut lt21: [int8_t; 326] = [
+static mut lt21: [i8; 326] = [
     -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100,
     -100, -6, 13, 9, 1, 3, 13, -5, 13, 1, 0, 0, 0, 0, 1, 3, 9, -100, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     1, -5, 1, 0, 0, 0, 0, 0, 0, 0, 0, 9, -100, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, -5, 3, 0, 0, 0, 0,
@@ -730,7 +725,7 @@ static mut lt21: [int8_t; 326] = [
     -10, 0, 0, 0, 0, 0, 13, -100, -10, 5, 0, 0, 0, 1, -100, -10, 13, 1, 0, 0, 7, -100, -11, 11, 1,
     5, -100, -100, -100, -100, -100, -100, -100, -100, -100, -101,
 ];
-static mut lt22: [int8_t; 465] = [
+static mut lt22: [i8; 465] = [
     -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100,
     -29, 13, -100, 5, 0, 0, 1, 1, 1, 3, 3, 5, 7, -3, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, -4, 3, 0, 0,
     0, 0, 0, 0, 1, 3, 11, -100, 5, 0, 0, 0, 0, 0, 0, 0, 1, 7, -3, 9, 0, 0, 0, 0, 0, 0, 0, 0, 1, 11,
@@ -750,7 +745,7 @@ static mut lt22: [int8_t; 465] = [
     0, 0, 0, -10, 3, 0, 0, 5, -100, -10, 11, 0, 0, 7, -10, 13, 1, 1, 13, -100, -11, 11, 11, -100,
     -100, -100, -100, -100, -100, -100, -100, -100, -100, -101,
 ];
-static mut lt23: [int8_t; 371] = [
+static mut lt23: [i8; 371] = [
     -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100,
     -100, -100, -16, 13, 13, -1, 13, 9, 5, 1, 0, 1, 5, 13, -100, -1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 1,
     7, -4, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -100, -1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 11, -4, 7, 0,
@@ -767,7 +762,7 @@ static mut lt23: [int8_t; 371] = [
     0, 3, -6, 11, 5, 3, 1, 0, 0, 0, 1, 1, 3, 5, -100, 13, 13, 13, 13, -100, -100, -100, -100, -100,
     -100, -100, -100, -100, -101,
 ];
-static mut lt24: [int8_t; 383] = [
+static mut lt24: [i8; 383] = [
     -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100,
     -100, -1, 13, 13, -2, 13, 13, 11, 11, 11, 13, -6, 11, 11, 11, 11, 11, 11, 11, 11, 13, -100, 3,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, -4, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, -100, 7, 0, 0, 0, 0, 0, 0,
@@ -784,7 +779,7 @@ static mut lt24: [int8_t; 383] = [
     0, 9, -100, -1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, -100, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 13,
     -100, -1, 7, 0, 0, 0, 0, 0, 0, 0, 1, 13, -100, -2, 9, 3, 0, 0, 1, 3, 7, -100, -101,
 ];
-static mut lt: [*mut int8_t; 25] = unsafe {
+static mut lt: [*mut i8; 25] = unsafe {
     [
         lt0.as_ptr() as *mut _,
         lt1.as_ptr() as *mut _,
