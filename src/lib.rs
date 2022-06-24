@@ -11,8 +11,6 @@
 #![feature(register_tool)]
 extern "C" {
 
-    fn open(__file: *const libc::c_char, __oflag: libc::c_int, _: ...) -> libc::c_int;
-
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
 
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong)
@@ -20,14 +18,11 @@ extern "C" {
 
     fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
 
-    fn close(__fd: libc::c_int) -> libc::c_int;
-
-    fn read(__fd: libc::c_int, __buf: *mut libc::c_void, __nbytes: size_t) -> ssize_t;
 }
 
 use rand::random;
 
-pub type uint32_t = libc::c_uint;
+pub type u32 = libc::c_uint;
 pub type ssize_t = __ssize_t;
 pub type __ssize_t = libc::c_long;
 pub type size_t = libc::c_ulong;
@@ -164,7 +159,7 @@ unsafe extern "C" fn letter(
     mpos + 3 as libc::c_int
 }
 #[no_mangle]
-pub static mut dr: [uint32_t; 100] = [0; 100];
+pub static mut dr: [u32; 100] = [0; 100];
 unsafe extern "C" fn line(mut im: *mut u8, mut swr: *mut u8, mut s1: u8) {
     let mut x: libc::c_int = 0;
     let mut sk1: libc::c_int = s1 as libc::c_int;
@@ -188,7 +183,7 @@ unsafe extern "C" fn dots(mut im: *mut u8) {
     let mut n: libc::c_int = 0;
     n = 0 as libc::c_int;
     while n < 100 as libc::c_int {
-        let mut v: uint32_t = dr[n as usize];
+        let mut v: u32 = dr[n as usize];
         let mut i: *mut u8 = im.offset(
             v.wrapping_rem((200 as libc::c_int * 67 as libc::c_int) as libc::c_uint) as isize,
         );
@@ -267,23 +262,20 @@ static mut letters: *const libc::c_char =
     b"abcdafahijklmnopqrstuvwxyz\x00" as *const u8 as *const libc::c_char;
 // Version
 // zlib/libpng license is at the end of this file
-#[no_mangle]
-pub unsafe extern "C" fn captcha(mut im: *mut u8) -> [u8; 6] {
+pub unsafe fn captcha(mut im: *mut u8) -> [u8; 6] {
     let mut swr: [u8; 200] = random();
     let mut s1: u8 = random();
     let mut s2: u8 = random();
     let mut word: [u8; 6] = random();
     let mut l = &mut word as *mut u8;
 
-    let mut f: i32 = open(
-        b"/dev/urandom\x00" as *const u8 as *const libc::c_char,
-        0 as libc::c_int,
-    );
+    /*
     read(
         f,
         dr.as_mut_ptr() as *mut libc::c_void,
-        ::std::mem::size_of::<[uint32_t; 100]>() as libc::c_ulong,
+        ::std::mem::size_of::<[u32; 100]>() as libc::c_ulong,
     );
+    */
     memset(
         im as *mut libc::c_void,
         0xff as libc::c_int,
