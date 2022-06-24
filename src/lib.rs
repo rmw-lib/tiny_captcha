@@ -69,12 +69,12 @@ unsafe fn letter(
       let mut x: *mut u8 = i
         .offset((skew * 200 as i32) as isize)
         .offset(skewh as isize);
-      mpos = if mpos as libc::c_long > i.offset(pos as isize).offset_from(r) as libc::c_long {
-        mpos as libc::c_long
+      mpos = if mpos as i64 > i.offset(pos as isize).offset_from(r) as i64 {
+        mpos as i64
       } else {
-        i.offset(pos as isize).offset_from(r) as libc::c_long
+        i.offset(pos as isize).offset_from(r) as i64
       } as i32;
-      if (x.offset_from(im) as libc::c_long) < (70 as i32 * 200 as i32) as libc::c_long {
+      if (x.offset_from(im) as i64) < (70 as i32 * 200 as i32) as i64 {
         *x = ((*p as i32) << 4 as i32) as u8
       }
       i = i.offset(1)
@@ -95,10 +95,10 @@ unsafe fn line(mut im: *mut u8, mut swr: *mut u8, mut s1: u8) {
     let mut skew: i32 = sw[sk1 as usize] as i32 / 16 as i32;
     sk1 += *swr.offset(x as isize) as i32 & (0x3 as i32 + 1 as i32);
     let mut i: *mut u8 = im.offset((200 as i32 * (45 as i32 + skew) + x) as isize);
-    *i.offset(0) = 0 as i32 as u8;
-    *i.offset(1) = 0 as i32 as u8;
-    *i.offset(200) = 0 as i32 as u8;
-    *i.offset(201) = 0 as i32 as u8;
+    *i.offset(0) = 0;
+    *i.offset(1) = 0;
+    *i.offset(200) = 0;
+    *i.offset(201) = 0;
     x += 1
   }
 }
@@ -107,14 +107,13 @@ unsafe fn dots(mut im: *mut u8) {
   n = 0 as i32;
   while n < 100 as i32 {
     let mut v: u32 = random();
-    let mut i: *mut u8 =
-      im.offset(v.wrapping_rem((200 as i32 * 67 as i32) as libc::c_uint) as isize);
-    *i.offset(0) = 0xff as i32 as u8;
-    *i.offset(1) = 0xff as i32 as u8;
-    *i.offset(2) = 0xff as i32 as u8;
-    *i.offset(200) = 0xff as i32 as u8;
-    *i.offset(201) = 0xff as i32 as u8;
-    *i.offset(202) = 0xff as i32 as u8;
+    let mut i: *mut u8 = im.offset(v.wrapping_rem(200 * 67) as isize);
+    *i.offset(0) = 0xff;
+    *i.offset(1) = 0xff;
+    *i.offset(2) = 0xff;
+    *i.offset(200) = 0xff;
+    *i.offset(201) = 0xff;
+    *i.offset(202) = 0xff;
     n += 1
   }
 }
@@ -126,17 +125,17 @@ unsafe fn blur(mut im: *mut u8) {
   while y < 68 as i32 {
     x = 0 as i32;
     while x < 198 as i32 {
-      let mut c11: libc::c_uint = *i as libc::c_uint;
-      let mut c12: libc::c_uint = *i.offset(1) as libc::c_uint;
-      let mut c21: libc::c_uint = *i.offset(200) as libc::c_uint;
-      let mut c22: libc::c_uint = *i.offset(201) as libc::c_uint;
+      let mut c11: u32 = *i as u32;
+      let mut c12: u32 = *i.offset(1) as u32;
+      let mut c21: u32 = *i.offset(200) as u32;
+      let mut c22: u32 = *i.offset(201) as u32;
       let fresh1 = i;
       i = i.offset(1);
       *fresh1 = c11
         .wrapping_add(c12)
         .wrapping_add(c21)
         .wrapping_add(c22)
-        .wrapping_div(4 as i32 as libc::c_uint) as u8;
+        .wrapping_div(4 as i32 as u32) as u8;
       x += 1
     }
     y += 1
@@ -153,11 +152,11 @@ unsafe fn filter(mut im: *mut u8) {
     x = 4 as i32;
     while x < 200 as i32 - 4 as i32 {
       if *i.offset(0) as i32 > 0xf0 as i32 && (*i.offset(1) as i32) < 0xf0 as i32 {
-        *o.offset(0) = 0 as i32 as u8;
-        *o.offset(1) = 0 as i32 as u8
+        *o.offset(0) = 0;
+        *o.offset(1) = 0
       } else if (*i.offset(0) as i32) < 0xf0 as i32 && *i.offset(1) as i32 > 0xf0 as i32 {
-        *o.offset(0) = 0 as i32 as u8;
-        *o.offset(1) = 0 as i32 as u8
+        *o.offset(0) = 0;
+        *o.offset(1) = 0
       }
       i = i.offset(1);
       o = o.offset(1);
@@ -167,8 +166,7 @@ unsafe fn filter(mut im: *mut u8) {
   }
   std::ptr::copy(&om as _, im, IMG_SIZE);
 }
-static mut letters: *const libc::c_char =
-  b"abcdafahijklmnopqrstuvwxyz\x00" as *const u8 as *const libc::c_char;
+static mut letters: *const u8 = b"abcdafahijklmnopqrstuvwxyz\x00" as *const u8;
 // Version
 // zlib/libpng license is at the end of this file
 
