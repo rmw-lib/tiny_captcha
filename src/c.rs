@@ -153,12 +153,11 @@ unsafe fn filter(im: *mut u8) {
   while y < 70_i32 {
     x = 4_i32;
     while x < 200_i32 - 4_i32 {
-      if *i.offset(0) > 0xf0 && *i.offset(1) < 0xf0 {
+      if (*i.offset(0) > 0xf0 && *i.offset(1) < 0xf0)
+        || ((*i.offset(0)) < 0xf0 && *i.offset(1) > 0xf0)
+      {
         *o.offset(0) = 0;
-        *o.offset(1) = 0
-      } else {
-        *o.offset(0) = 0;
-        *o.offset(1) = 0
+        *o.offset(1) = 0;
       }
       i = i.offset(1);
       o = o.offset(1);
