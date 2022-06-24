@@ -1,11 +1,4 @@
-#![allow(
-  mutable_transmutes,
-  non_camel_case_types,
-  non_snake_case,
-  non_upper_case_globals,
-  unused_assignments,
-  unused_mut
-)]
+#![allow(non_camel_case_types, non_snake_case, non_upper_case_globals)]
 
 pub const WIDTH: u16 = 200;
 pub const HEIGHT: u16 = 70;
