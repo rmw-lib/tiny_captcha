@@ -268,36 +268,22 @@ static mut letters: *const libc::c_char =
 // Version
 // zlib/libpng license is at the end of this file
 #[no_mangle]
-pub unsafe extern "C" fn captcha(mut im: *mut u8, mut l: *mut u8) {
-    let mut swr: [u8; 200] = [0; 200];
+pub unsafe extern "C" fn captcha(mut im: *mut u8) -> [u8; 6] {
+    let mut swr: [u8; 200] = random();
     let mut s1: u8 = random();
     let mut s2: u8 = random();
+    let mut word: [u8; 6] = random();
+    let mut l = &mut word as *mut u8;
+
     let mut f: i32 = open(
         b"/dev/urandom\x00" as *const u8 as *const libc::c_char,
         0 as libc::c_int,
-    );
-    read(f, l as *mut libc::c_void, 5 as libc::c_int as size_t);
-    read(
-        f,
-        swr.as_mut_ptr() as *mut libc::c_void,
-        200 as libc::c_int as size_t,
     );
     read(
         f,
         dr.as_mut_ptr() as *mut libc::c_void,
         ::std::mem::size_of::<[uint32_t; 100]>() as libc::c_ulong,
     );
-    read(
-        f,
-        &mut s1 as *mut u8 as *mut libc::c_void,
-        1 as libc::c_int as size_t,
-    );
-    read(
-        f,
-        &mut s2 as *mut u8 as *mut libc::c_void,
-        1 as libc::c_int as size_t,
-    );
-    close(f);
     memset(
         im as *mut libc::c_void,
         0xff as libc::c_int,
@@ -382,6 +368,7 @@ pub unsafe extern "C" fn captcha(mut im: *mut u8, mut l: *mut u8) {
         *letters.offset(*l.offset(4 as libc::c_int as isize) as isize) as u8;
     *l.offset(5 as libc::c_int as isize) =
         *letters.offset(*l.offset(5 as libc::c_int as isize) as isize) as u8;
+    word
 }
 static mut lt0: [i8; 381] = [
     -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100,

@@ -3,11 +3,9 @@ use tiny_captcha::{captcha, gifsize, makegif};
 
 fn main() -> anyhow::Result<()> {
     let mut img: [u8; 70 * 200] = [0; 70 * 200];
-    let mut word: [u8; 6] = [0; 6];
-    unsafe {
-        captcha(&mut img as *mut u8, &mut word as *mut u8);
-    }
-    let _word = unsafe { std::str::from_utf8_unchecked(&word) };
+    let word = unsafe { captcha(&mut img as *mut u8) };
+    let word = unsafe { std::str::from_utf8_unchecked(&word) };
+    println!("{}", word);
     let mut gif: [u8; gifsize as usize] = [0; gifsize as usize];
     unsafe {
         makegif(&mut img as *mut u8, &mut gif as *mut u8);
