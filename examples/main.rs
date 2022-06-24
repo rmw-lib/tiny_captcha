@@ -15,6 +15,6 @@ fn main() -> anyhow::Result<()> {
     let exe = current_exe()?;
     let gif_path = exe.parent().unwrap().join("c.gif");
     println!("{}", gif_path.display());
-    fs::write(gif_path, &gif);
+    fs::write(gif_path, &gif)?;
     Ok(())
 }

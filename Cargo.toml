@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.58"
 libc = "0.2.126"
+rand = "0.8.5"

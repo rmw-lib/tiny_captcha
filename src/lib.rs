@@ -277,7 +277,7 @@ pub unsafe extern "C" fn captcha(mut im: *mut libc::c_uchar, mut l: *mut libc::c
     let mut swr: [libc::c_uchar; 200] = [0; 200];
     let mut s1: uint8_t = 0;
     let mut s2: uint8_t = 0;
-    let mut f: libc::c_int = open(
+    let mut f: i32 = open(
         b"/dev/urandom\x00" as *const u8 as *const libc::c_char,
         0 as libc::c_int,
     );
