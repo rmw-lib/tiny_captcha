@@ -36,9 +36,7 @@ unsafe fn letter(
   mut s2: u8,
 ) -> i32 {
   let mut p: *mut i8 = *lt.as_mut_ptr().offset(n as isize);
-  let mut r: *mut u8 = im
-    .offset((200 as i32 * 16 as i32) as isize)
-    .offset(pos as isize);
+  let mut r: *mut u8 = im.offset(200 * 16).offset(pos as isize);
   let mut i: *mut u8 = r;
   let mut sk1: i32 = s1 as i32 + pos;
   let mut sk2: i32 = s2 as i32 + pos;
@@ -193,7 +191,7 @@ pub unsafe fn captcha() -> ([u8; 6], [u8; IMG_SIZE]) {
   *fresh6 = (*fresh6 as i32 % 25 as i32) as u8;
   let fresh7 = &mut (*l.offset(5));
   *fresh7 = (*fresh7 as i32 % 25 as i32) as u8;
-  let mut p: i32 = 30 as i32;
+  let mut p: i32 = 10;
   p = letter(*l.offset(0) as i32, p, im, swr.as_mut_ptr(), s1, s2);
   p = letter(*l.offset(1) as i32, p, im, swr.as_mut_ptr(), s1, s2);
   p = letter(*l.offset(2) as i32, p, im, swr.as_mut_ptr(), s1, s2);
