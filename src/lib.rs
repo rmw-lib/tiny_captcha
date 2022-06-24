@@ -10,18 +10,18 @@
 #![register_tool(c2rust)]
 #![feature(register_tool)]
 extern "C" {
-    #[no_mangle]
+
     fn open(__file: *const libc::c_char, __oflag: libc::c_int, _: ...) -> libc::c_int;
-    #[no_mangle]
+
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong) -> *mut libc::c_void;
-    #[no_mangle]
+
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong)
         -> *mut libc::c_void;
-    #[no_mangle]
+
     fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
-    #[no_mangle]
+
     fn close(__fd: libc::c_int) -> libc::c_int;
-    #[no_mangle]
+
     fn read(__fd: libc::c_int, __buf: *mut libc::c_void, __nbytes: size_t) -> ssize_t;
 }
 pub type uint8_t = libc::c_uchar;
@@ -321,7 +321,7 @@ unsafe extern "C" fn letter(
             }
         } else {
             if sk1 >= 200 as libc::c_int {
-                sk1 = sk1 % 200 as libc::c_int
+                sk1 %= 200 as libc::c_int
             }
             let mut skew: libc::c_int = sw[sk1 as usize] as libc::c_int / 16 as libc::c_int;
             sk1 += (*swr.offset(i.offset(pos as isize).offset_from(r) as libc::c_long as isize)
@@ -329,7 +329,7 @@ unsafe extern "C" fn letter(
                 & 0x1 as libc::c_int)
                 + 1 as libc::c_int;
             if sk2 >= 200 as libc::c_int {
-                sk2 = sk2 % 200 as libc::c_int
+                sk2 %= 200 as libc::c_int
             }
             let mut skewh: libc::c_int = sw[sk2 as usize] as libc::c_int / 70 as libc::c_int;
             sk2 += *swr.offset(row as isize) as libc::c_int & 0x1 as libc::c_int;
@@ -350,7 +350,7 @@ unsafe extern "C" fn letter(
         }
         p = p.offset(1)
     }
-    return mpos + 3 as libc::c_int;
+    mpos + 3 as libc::c_int
 }
 #[no_mangle]
 pub static mut dr: [uint32_t; 100] = [0; 100];
@@ -364,10 +364,10 @@ unsafe extern "C" fn line(
     x = 0 as libc::c_int;
     while x < 199 as libc::c_int {
         if sk1 >= 200 as libc::c_int {
-            sk1 = sk1 % 200 as libc::c_int
+            sk1 %= 200 as libc::c_int
         }
         let mut skew: libc::c_int = sw[sk1 as usize] as libc::c_int / 16 as libc::c_int;
-        sk1 += *swr.offset(x as isize) as libc::c_int & 0x3 as libc::c_int + 1 as libc::c_int;
+        sk1 += *swr.offset(x as isize) as libc::c_int & (0x3 as libc::c_int + 1 as libc::c_int);
         let mut i: *mut libc::c_uchar =
             im.offset((200 as libc::c_int * (45 as libc::c_int + skew) + x) as isize);
         *i.offset(0 as libc::c_int as isize) = 0 as libc::c_int as libc::c_uchar;
@@ -499,17 +499,17 @@ pub unsafe extern "C" fn captcha(mut im: *mut libc::c_uchar, mut l: *mut libc::c
     );
     s1 = (s1 as libc::c_int & 0x7f as libc::c_int) as uint8_t;
     s2 = (s2 as libc::c_int & 0x3f as libc::c_int) as uint8_t;
-    let ref mut fresh2 = *l.offset(0 as libc::c_int as isize);
+    let fresh2 = &mut (*l.offset(0 as libc::c_int as isize));
     *fresh2 = (*fresh2 as libc::c_int % 25 as libc::c_int) as libc::c_uchar;
-    let ref mut fresh3 = *l.offset(1 as libc::c_int as isize);
+    let fresh3 = &mut (*l.offset(1 as libc::c_int as isize));
     *fresh3 = (*fresh3 as libc::c_int % 25 as libc::c_int) as libc::c_uchar;
-    let ref mut fresh4 = *l.offset(2 as libc::c_int as isize);
+    let fresh4 = &mut (*l.offset(2 as libc::c_int as isize));
     *fresh4 = (*fresh4 as libc::c_int % 25 as libc::c_int) as libc::c_uchar;
-    let ref mut fresh5 = *l.offset(3 as libc::c_int as isize);
+    let fresh5 = &mut (*l.offset(3 as libc::c_int as isize));
     *fresh5 = (*fresh5 as libc::c_int % 25 as libc::c_int) as libc::c_uchar;
-    let ref mut fresh6 = *l.offset(4 as libc::c_int as isize);
+    let fresh6 = &mut (*l.offset(4 as libc::c_int as isize));
     *fresh6 = (*fresh6 as libc::c_int % 25 as libc::c_int) as libc::c_uchar;
-    let ref mut fresh7 = *l.offset(5 as libc::c_int as isize);
+    let fresh7 = &mut (*l.offset(5 as libc::c_int as isize));
     *fresh7 = (*fresh7 as libc::c_int % 25 as libc::c_int) as libc::c_uchar;
     let mut p: libc::c_int = 30 as libc::c_int;
     p = letter(
