@@ -33,10 +33,10 @@ pub unsafe extern "C" fn makegif(mut im: *mut u8, mut gif: *mut u8) {
     // Image Separator // left x top // widthxheight // Flags
     // LZW code size
     memcpy(gif as *mut libc::c_void,
-           b"GIF89a\xc8\x00F\x00\x83\x00\x00\x00\x00\x00\x10\x10\x10   000@@@PPP```ppp\x80\x80\x80\x90\x90\x90\xa0\xa0\xa0\xb0\xb0\xb0\xc0\xc0\xc0\xd0\xd0\xd0\xe0\xe0\xe0\xff\xff\xff,\x00\x00\x00\x00\xc8\x00F\x00\x00\x04\x00"
-               as *const u8 as *const libc::c_char as *const libc::c_void,
-           (13 as libc::c_int + 48 as libc::c_int + 10 as libc::c_int +
-                1 as libc::c_int) as libc::c_ulong); // Data length 5*50=250
+    b"GIF89a\xc8\x00F\x00\x83\x00\x00\x00\x00\x00\x10\x10\x10   000@@@PPP```ppp\x80\x80\x80\x90\x90\x90\xa0\xa0\xa0\xb0\xb0\xb0\xc0\xc0\xc0\xd0\xd0\xd0\xe0\xe0\xe0\xff\xff\xff,\x00\x00\x00\x00\xc8\x00F\x00\x00\x04\x00"
+    as *const u8 as *const libc::c_char as *const libc::c_void,
+    (13 as libc::c_int + 48 as libc::c_int + 10 as libc::c_int +
+     1 as libc::c_int) as libc::c_ulong); // Data length 5*50=250
     let mut x: libc::c_int = 0; // bbb10000
     let mut y: libc::c_int = 0; // b10000xb
     let mut i: *mut u8 = im; // 0000xbbb
@@ -262,25 +262,18 @@ static mut letters: *const libc::c_char =
     b"abcdafahijklmnopqrstuvwxyz\x00" as *const u8 as *const libc::c_char;
 // Version
 // zlib/libpng license is at the end of this file
-pub unsafe fn captcha(mut im: *mut u8) -> [u8; 6] {
+
+pub const IMG_SIZE: usize = 200 * 70;
+
+pub unsafe fn captcha() -> ([u8; 6], [u8; IMG_SIZE]) {
     let mut swr: [u8; 200] = random();
     let mut s1: u8 = random();
     let mut s2: u8 = random();
     let mut word: [u8; 6] = random();
+    let mut img: [u8; IMG_SIZE] = [255; IMG_SIZE];
+    let mut im = &mut img as *mut u8;
     let mut l = &mut word as *mut u8;
 
-    /*
-    read(
-        f,
-        dr.as_mut_ptr() as *mut libc::c_void,
-        ::std::mem::size_of::<[u32; 100]>() as libc::c_ulong,
-    );
-    */
-    memset(
-        im as *mut libc::c_void,
-        0xff as libc::c_int,
-        (200 as libc::c_int * 70 as libc::c_int) as libc::c_ulong,
-    );
     s1 = (s1 as libc::c_int & 0x7f as libc::c_int) as u8;
     s2 = (s2 as libc::c_int & 0x3f as libc::c_int) as u8;
     let fresh2 = &mut (*l.offset(0 as libc::c_int as isize));
@@ -360,7 +353,7 @@ pub unsafe fn captcha(mut im: *mut u8) -> [u8; 6] {
         *letters.offset(*l.offset(4 as libc::c_int as isize) as isize) as u8;
     *l.offset(5 as libc::c_int as isize) =
         *letters.offset(*l.offset(5 as libc::c_int as isize) as isize) as u8;
-    word
+    (word, img)
 }
 static mut lt0: [i8; 381] = [
     -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100,
@@ -788,26 +781,26 @@ static mut lt: [*mut i8; 25] = unsafe {
     ]
 };
 /*
-  http://brokestream.com/captcha.html
+   http://brokestream.com/captcha.html
 
-  Copyright (C) 2009 Ivan Tikhonov
+   Copyright (C) 2009 Ivan Tikhonov
 
-  This software is provided 'as-is', without any express or implied
-  warranty.  In no event will the authors be held liable for any damages
-  arising from the use of this software.
+   This software is provided 'as-is', without any express or implied
+   warranty.  In no event will the authors be held liable for any damages
+   arising from the use of this software.
 
-  Permission is granted to anyone to use this software for any purpose,
-  including commercial applications, and to alter it and redistribute it
-  freely, subject to the following restrictions:
+   Permission is granted to anyone to use this software for any purpose,
+   including commercial applications, and to alter it and redistribute it
+   freely, subject to the following restrictions:
 
-  1. The origin of this software must not be misrepresented; you must not
-     claim that you wrote the original software. If you use this software
-     in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required.
-  2. Altered source versions must be plainly marked as such, and must not be
-     misrepresented as being the original software.
-  3. This notice may not be removed or altered from any source distribution.
+   1. The origin of this software must not be misrepresented; you must not
+   claim that you wrote the original software. If you use this software
+   in a product, an acknowledgment in the product documentation would be
+   appreciated but is not required.
+   2. Altered source versions must be plainly marked as such, and must not be
+   misrepresented as being the original software.
+   3. This notice may not be removed or altered from any source distribution.
 
-  Ivan Tikhonov, kefeer@brokestream.com
+   Ivan Tikhonov, kefeer@brokestream.com
 
 */
