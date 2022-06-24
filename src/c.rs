@@ -156,7 +156,7 @@ unsafe fn filter(im: *mut u8) {
       if *i.offset(0) > 0xf0 && *i.offset(1) < 0xf0 {
         *o.offset(0) = 0;
         *o.offset(1) = 0
-      } else if (*i.offset(0)) < 0xf0 && *i.offset(1) > 0xf0 {
+      } else {
         *o.offset(0) = 0;
         *o.offset(1) = 0
       }
