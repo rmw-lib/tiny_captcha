@@ -20,14 +20,7 @@ static mut sw: [i8; 200] = [
   -16, -12, -8, -4,
 ];
 
-unsafe fn letter(
-  mut n: i32,
-  mut pos: i32,
-  mut im: *mut u8,
-  mut swr: *mut u8,
-  mut s1: u8,
-  mut s2: u8,
-) -> i32 {
+unsafe fn letter(n: i32, pos: i32, im: *mut u8, swr: *mut u8, s1: u8, s2: u8) -> i32 {
   let mut p: *mut i8 = *lt.as_mut_ptr().offset(n as isize);
   let mut r: *mut u8 = im.offset(200 * 16).offset(pos as isize);
   let mut i: *mut u8 = r;
@@ -49,14 +42,14 @@ unsafe fn letter(
       if sk1 >= 200_i32 {
         sk1 %= 200_i32
       }
-      let mut skew: i32 = sw[sk1 as usize] as i32 / 16_i32;
+      let skew: i32 = sw[sk1 as usize] as i32 / 16_i32;
       sk1 += (*swr.offset(i.offset(pos as isize).offset_from(r) as isize) as i32 & 0x1_i32) + 1_i32;
       if sk2 >= 200_i32 {
         sk2 %= 200_i32
       }
-      let mut skewh: i32 = sw[sk2 as usize] as i32 / 70_i32;
+      let skewh: i32 = sw[sk2 as usize] as i32 / 70_i32;
       sk2 += *swr.offset(row as isize) as i32 & 0x1_i32;
-      let mut x: *mut u8 = i.offset((skew * 200_i32) as isize).offset(skewh as isize);
+      let x: *mut u8 = i.offset((skew * 200_i32) as isize).offset(skewh as isize);
       mpos = if mpos as i64 > i.offset(pos as isize).offset_from(r) as i64 {
         mpos as i64
       } else {
@@ -72,7 +65,7 @@ unsafe fn letter(
   mpos + 3_i32
 }
 
-unsafe fn line(mut im: *mut u8, mut swr: *mut u8, mut s1: u8) {
+unsafe fn line(im: *mut u8, swr: *mut u8, s1: u8) {
   let mut x: i32 = 0;
   let mut sk1: i32 = s1 as i32;
   x = 0_i32;
@@ -80,9 +73,9 @@ unsafe fn line(mut im: *mut u8, mut swr: *mut u8, mut s1: u8) {
     if sk1 >= 200_i32 {
       sk1 %= 200_i32
     }
-    let mut skew: i32 = sw[sk1 as usize] as i32 / 16_i32;
+    let skew: i32 = sw[sk1 as usize] as i32 / 16_i32;
     sk1 += *swr.offset(x as isize) as i32 & (0x3_i32 + 1_i32);
-    let mut i: *mut u8 = im.offset((200_i32 * (45_i32 + skew) + x) as isize);
+    let i: *mut u8 = im.offset((200_i32 * (45_i32 + skew) + x) as isize);
     *i.offset(0) = 0;
     *i.offset(1) = 0;
     *i.offset(200) = 0;
@@ -90,12 +83,12 @@ unsafe fn line(mut im: *mut u8, mut swr: *mut u8, mut s1: u8) {
     x += 1
   }
 }
-unsafe fn dots(mut im: *mut u8) {
+unsafe fn dots(im: *mut u8) {
   let mut n: i32 = 0;
   n = 0_i32;
   while n < 100_i32 {
-    let mut v: u32 = random();
-    let mut i: *mut u8 = im.offset(v.wrapping_rem(200 * 67) as isize);
+    let v: u32 = random();
+    let i: *mut u8 = im.offset(v.wrapping_rem(200 * 67) as isize);
     *i.offset(0) = 0xff;
     *i.offset(1) = 0xff;
     *i.offset(2) = 0xff;
@@ -105,7 +98,7 @@ unsafe fn dots(mut im: *mut u8) {
     n += 1
   }
 }
-unsafe fn blur(mut im: *mut u8) {
+unsafe fn blur(im: *mut u8) {
   let mut i: *mut u8 = im;
   let mut x: i32 = 0;
   let mut y: i32 = 0;
@@ -113,10 +106,10 @@ unsafe fn blur(mut im: *mut u8) {
   while y < 68_i32 {
     x = 0_i32;
     while x < 198_i32 {
-      let mut c11: u32 = *i as u32;
-      let mut c12: u32 = *i.offset(1) as u32;
-      let mut c21: u32 = *i.offset(200) as u32;
-      let mut c22: u32 = *i.offset(201) as u32;
+      let c11: u32 = *i as u32;
+      let c12: u32 = *i.offset(1) as u32;
+      let c21: u32 = *i.offset(200) as u32;
+      let c22: u32 = *i.offset(201) as u32;
       let fresh1 = i;
       i = i.offset(1);
       *fresh1 = c11
@@ -129,7 +122,7 @@ unsafe fn blur(mut im: *mut u8) {
     y += 1
   }
 }
-unsafe fn filter(mut im: *mut u8) {
+unsafe fn filter(im: *mut u8) {
   let mut om: [u8; IMG_SIZE] = [255; IMG_SIZE];
   let mut i: *mut u8 = im;
   let mut o: *mut u8 = om.as_mut_ptr();
@@ -164,8 +157,8 @@ pub unsafe fn captcha() -> ([u8; 6], [u8; IMG_SIZE]) {
   let mut s2: u8 = random();
   let mut word: [u8; 6] = random();
   let mut img: [u8; IMG_SIZE] = [255; IMG_SIZE];
-  let mut im = &mut img as *mut u8;
-  let mut l = &mut word as *mut u8;
+  let im = &mut img as *mut u8;
+  let l = &mut word as *mut u8;
 
   s1 = (s1 as i32 & 0x7f_i32) as u8;
   s2 = (s2 as i32 & 0x3f_i32) as u8;
